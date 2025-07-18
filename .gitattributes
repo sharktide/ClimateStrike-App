@@ -62,8 +62,6 @@
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
 
-*.cshtml linguist-language=HTML+Razor
-*.razor linguist-language=HTML+Razor
-*.cshtml linguist-detectable=true
-*.razor linguist-detectable=true
-components/* linguist-vendored=false
+*.cshtml linguist-detectable
+*.razor linguist-detectable
+components/* -linguist-vendored
