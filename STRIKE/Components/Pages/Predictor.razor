@@ -1,0 +1,24 @@
+﻿@page "/predictor"
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudTabs Rounded="true" Elevation="2">
+        <MudTabPanel Text="🔥 Wildfires">
+            <WildfirePredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌊 Fluvial Floods">
+            <FluvialFloodPredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌧️ Pluvial Floods">
+            <PluvialFloodPredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌩️ Flash Floods">
+            <PluvialFloodPredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌎 Earthquakes">
+            <PluvialFloodPredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌀 Hurricanes">
+            <PluvialFloodPredictor />
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
