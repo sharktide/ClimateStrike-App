@@ -61,3 +61,8 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+*.cshtml linguist-language=Razor
+*.razor linguist-language=Razor
+*.cshtml linguist-detectable=true
+*.razor linguist-detectable=true
