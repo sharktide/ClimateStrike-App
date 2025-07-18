@@ -66,3 +66,4 @@
 *.razor linguist-language=Razor
 *.cshtml linguist-detectable=true
 *.razor linguist-detectable=true
+components/* linguist-vendored=false
