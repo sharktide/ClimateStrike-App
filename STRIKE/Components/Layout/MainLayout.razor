@@ -22,12 +22,14 @@
             <MudItem xs="4" Class="d-flex justify-end">
                 <MudHidden Breakpoint="Breakpoint.MdAndUp">
                     <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit">
-                        <MudMenuItem>
-                            <MudSwitch @bind-Value="_isDarkMode" T="bool" Label="Dark Mode" />
-                        </MudMenuItem>
-                        <MudMenuItem>Login</MudMenuItem>
-                        <MudMenuItem>Logout</MudMenuItem>
+                        <MudPaper Class="pa-2" Style="min-width: 200px;">
+                            <MudSwitch @bind-Value="_isDarkMode" T="bool" Label="Dark Mode" Class="mb-2" />
+                            <MudDivider />
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" FullWidth="true">Login</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true">Logout</MudButton>
+                        </MudPaper>
                     </MudMenu>
+
                 </MudHidden>
 
                 <MudHidden Breakpoint="Breakpoint.SmAndDown">
