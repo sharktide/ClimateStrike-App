@@ -40,12 +40,13 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-        <DefaultLanguage>en</DefaultLanguage>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+        <DefaultLanguage>en-us</DefaultLanguage>
         <PublishTrimmed>false</PublishTrimmed>
+        <TrimmerDefaultAction>copyused</TrimmerDefaultAction>
         <TrimMode>link</TrimMode>
+
+  <!-- Disable the trim analyzer so you can build without warnings -->
+  <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     </PropertyGroup>
 
     <ItemGroup>
