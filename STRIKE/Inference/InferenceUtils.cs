@@ -7,9 +7,12 @@ using System.Text.Json;
 
 public static class ScalerLoader
 {
-    public static StandardScaler Load(string path)
+    public static StandardScaler Load(string fileName)
     {
-        var json = File.ReadAllText(path);
+        using var stream = FileSystem.OpenAppPackageFileAsync(fileName).Result;
+        using var reader = new StreamReader(stream);
+        var json = reader.ReadToEnd();
+
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         return JsonSerializer.Deserialize<StandardScaler>(json, options)
@@ -23,11 +26,15 @@ public static class InferenceRunner
     private static InferenceSession _trustSession;
     private static StandardScaler? _scaler;
 
-    public static void Initialize(string baseModelPath, string trustModelPath, StandardScaler scaler)
+    public static void Initialize(string baseModelFileName, string trustModelFileName, StandardScaler scaler)
     {
+        _scaler = scaler;
+
+        var baseModelPath = ExtractModelToTempFile(baseModelFileName);
+        var trustModelPath = ExtractModelToTempFile(trustModelFileName);
+
         _baseSession = new InferenceSession(baseModelPath);
         _trustSession = new InferenceSession(trustModelPath);
-        _scaler = scaler;
     }
 
     public static float RunPrediction(float[] inputFeatures, bool useTrust)
@@ -59,18 +66,36 @@ public static class InferenceRunner
 
         return adjustedProb;
     }
-}
 
+    private static string ExtractModelToTempFile(string fileName)
+    {
+        using var stream = FileSystem.OpenAppPackageFileAsync(fileName).Result;
+
+        var tempPath = Path.Combine(FileSystem.CacheDirectory, fileName);
+
+        var directory = Path.GetDirectoryName(tempPath);
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory!);
+        }
+
+        using var fileStream = File.Create(tempPath);
+        stream.CopyTo(fileStream);
+
+        return tempPath;
+    }
+
+}
 
 public class StandardScaler
 {
-
     [JsonConstructor]
     public StandardScaler(List<double> mean, List<double> scale)
     {
         Mean = mean;
         Scale = scale;
     }
+
     public List<double> Mean { get; set; }
     public List<double> Scale { get; set; }
 
