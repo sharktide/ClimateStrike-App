@@ -61,13 +61,6 @@
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
-		<ItemGroup>
-		  <Content Include="Models\**\*.*">
-		    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  </Content>
-		</ItemGroup>
-
-
 	<ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
