@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -23,7 +23,7 @@ jobs:
         run: dotnet publish STRIKE/StrikeAI.csproj -f net9.0-ios -c Release -p:ArchiveOnBuild=true -p:EnableCodeSigning=false
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: StrikeAI-iOS-IPA
           path: STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
