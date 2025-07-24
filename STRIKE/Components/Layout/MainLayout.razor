@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
 
-<MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider  @ref="_mudThemeProvider" Theme="@StrikeTheme" IsDarkMode="_isDarkMode" />
 <MudSnackbarProvider />
 <MudDialogProvider />
 <MudPopoverProvider />
@@ -10,39 +10,39 @@
     <MudAppBar Elevation="1" Color="Color.Default" Class="appbar-compact">
         <MudGrid Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudItem xs="2" Class="d-flex align-center">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Edge="Edge.Start" Color="Color.Inherit" />
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Edge="Edge.Start" Color="Color.Default" />
             </MudItem>
 
-            <MudItem xs="6" Class="d-flex justify-center">
+            <MudItem xs="6" Class="d-flex justify-center align-self-center">
                 <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    <MudText Typo="Typo.subtitle1" Class="ml-2">STRIKE AI 2025</MudText>
+                    <MudText Typo="Typo.subtitle1" style="color: #528AAE" Class="ml-2" >StrikeAI</MudText>
                 </MudHidden>
             </MudItem>
 
             <MudItem xs="4" Class="d-flex justify-end">
                 <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit">
+                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default">
                         <MudPaper Class="pa-2" Style="min-width: 200px;">
                             <MudSwitch @bind-Value="_isDarkMode" T="bool" Label="Dark Mode" Class="mb-2" />
                             <MudDivider />
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" FullWidth="true">Login</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true">Logout</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Default" Class="mt-2" FullWidth="true">Login</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true">Logout</MudButton>
                         </MudPaper>
                     </MudMenu>
 
                 </MudHidden>
 
                 <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    <MudSwitch @bind-Value="_isDarkMode" T="bool" Label="Dark Mode" Class="mx-2" />
-                    <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="ml-2">Login</MudButton>
-                    <MudButton Variant="Variant.Text" Color="Color.Inherit">Logout</MudButton>
+                    <MudSwitch @bind-Value="_isDarkMode" T="bool" style="color: #528AAE" Label="Dark Mode" Class="mx-2 align-self-center" />
+                    <MudButton Variant="Variant.Text" Color="Color.Default" Class="ml-2 align-self-center">Login</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" class="align-self-center">Logout</MudButton>
                 </MudHidden>
             </MudItem>
         </MudGrid>
     </MudAppBar>
 
 
-    <MudDrawer Variant="DrawerVariant.Responsive" Elevation="2" Width="260px" Open="@_drawerOpen">
+    <MudDrawer Variant="DrawerVariant.Responsive" Elevation="6" Width="260px" Open="@_drawerOpen">
         <NavMenu />
     </MudDrawer>
 
@@ -54,8 +54,46 @@
 
 @code {
     private bool _drawerOpen = true;
-    private bool _isDarkMode = true;
+    private bool _isDarkMode;
     private MudTheme _theme = new();
+    private MudThemeProvider _mudThemeProvider;
+
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private MudTheme StrikeTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#80CBC4",
+            Background = "#FFFFFF",
+            AppbarBackground = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            TextPrimary = "#212121",
+            TextSecondary = "#757575",
+            Surface = "#F8F9FA",
+            ActionDefault = "#B0BEC5",
+            ActionDisabled = "#CFD8DC",
+            Divider = "#E0E0E0"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#528AAE"
+        }
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+            StateHasChanged();
+        }
+    }
+    private Task OnSystemDarkModeChanged(bool newValue)
+    {
+        _isDarkMode = newValue;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
 }

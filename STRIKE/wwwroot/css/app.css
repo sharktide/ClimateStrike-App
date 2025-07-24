@@ -71,7 +71,7 @@ h1:focus {
     display: none;
 }
 
-..appbar-compact {
+.appbar-compact {
     background: #2a2a2e;
     color: #f2f2f2;
     height: 48px;
@@ -79,7 +79,18 @@ h1:focus {
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
+.mud-button-label,
+.nocaps {
+    text-transform: none;
+}
 
+.mud-primary-text {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.mud-secondary-text {
+    color: var(--mud-palette-text-secondary) !important;
+}
 
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {

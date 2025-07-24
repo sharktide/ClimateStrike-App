@@ -1,67 +1,57 @@
 ﻿@using STRIKE
+@using STRIKE.Inference
 
 <MudPaper Elevation="3" Class="pa-4">
     <MudGrid>
         <MudItem xs="12" sm="6">
-            <!-- Temperature Slider -->
             <MudSlider T="float"
                        Min="@TemperatureMin"
                        Max="@TemperatureMax"
                        Step="1f"
                        @bind-Value="_temperature"
-                       Label="Temperature"
                        Variant="Variant.Filled"
                        Color="Color.Success"
                        ValueLabel="true">
-                <LabelContent>
                     <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                         <MudText>Temperature: </MudText>
-                        <MudText Color="Color.Secondary">@_temperature.ToString()</MudText>
+                        <MudText Color="Color.Primary">@_temperature.ToString()</MudText>
                         <MudSelect T="string" Dense="true" @bind-Value="_temperatureUnit" Class="ml-2" Style="width: 80px;">
-                            <MudSelectItem Value="@("K")"><MudText Color="Color.Secondary">Kelvin</MudText></MudSelectItem>
-                            <MudSelectItem Value="@("C")"><MudText Color="Color.Secondary">°C</MudText></MudSelectItem>
-                            <MudSelectItem Value="@("F")"><MudText Color="Color.Secondary">°F</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("K")"><MudText Color="Color.Primary">Kelvin</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("C")"><MudText Color="Color.Primary">°C</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("F")"><MudText Color="Color.Primary">°F</MudText></MudSelectItem>
                         </MudSelect>
                     </MudStack>
-                </LabelContent>
             </MudSlider>
 
-            <!-- Humidity Slider -->
             <MudSlider T="float" Min="0f" Max="100f" Step="1f" @bind-Value="_humidity"
-                       Label="Humidity (%)" Variant="Variant.Filled" Color="Color.Success"
+                       Variant="Variant.Filled" Color="Color.Success"
                        ValueLabel="true">
-                   <LabelContent>
                         <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                             <MudText>Humidity: </MudText>
-                            <MudText Color="Color.Secondary">@_humidity.ToString()</MudText>
+                            <MudText Color="Color.Primary">@_humidity.ToString()</MudText>
                         <MudSelect T="string" Dense="true" @bind-Value="_humidityUnit" Class="ml-2" Style="width: 80px;">
-                                <MudSelectItem Value="@("%")"><MudText Color="Color.Secondary">%</MudText></MudSelectItem>
+                                <MudSelectItem Value="@("%")"><MudText Color="Color.Primary">%</MudText></MudSelectItem>
                             </MudSelect>
                         </MudStack>
-                   </LabelContent>
             </MudSlider>
 
-            <!-- Wind Speed Slider -->
             <MudSlider T="float"
                        Min="@WindSpeedMin"
                        Max="@WindSpeedMax"
                        Step="1f"
                        @bind-Value="_windSpeed"
-                       Label="Wind Speed"
                        Variant="Variant.Filled"
                        Color="Color.Success"
                        ValueLabel="true">
-                <LabelContent>
                     <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                         <MudText>Wind Speed: </MudText>
-                        <MudText Color="Color.Secondary">@_windSpeed.ToString()</MudText>
+                        <MudText Color="Color.Primary">@_windSpeed.ToString()</MudText>
                         <MudSelect T="string" Dense="true" @bind-Value="_windSpeedUnit" Class="ml-2" Style="width: 80px;">
-                            <MudSelectItem Value="@("m/s")"><MudText Color="Color.Secondary">m/s</MudText></MudSelectItem>
-                            <MudSelectItem Value="@("km/h")"><MudText Color="Color.Secondary">kph</MudText></MudSelectItem>
-                            <MudSelectItem Value="@("mp/h")"><MudText Color="Color.Secondary">mph</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("m/s")"><MudText Color="Color.Primary">m/s</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("km/h")"><MudText Color="Color.Primary">kph</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("mp/h")"><MudText Color="Color.Primary">mph</MudText></MudSelectItem>
                         </MudSelect>
                     </MudStack>
-                </LabelContent>
             </MudSlider>
 
             <!-- Elevation Slider -->
@@ -70,43 +60,36 @@
                        Max="@ElevationMax"
                        Step="10f"
                        @bind-Value="_elevation"
-                       Label="Elevation"
                        Variant="Variant.Filled"
                        Color="Color.Success"
                        ValueLabel="true">
-                <LabelContent>
                     <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                         <MudText>Elevation: </MudText>
-                        <MudText Color="Color.Secondary">@_elevation.ToString()</MudText>
+                        <MudText Color="Color.Primary">@_elevation.ToString()</MudText>
                         <MudSelect T="string" Dense="true" @bind-Value="_elevationUnit" Class="ml-2" Style="width: 80px;">
-                            <MudSelectItem Value="@("m")"><MudText Color="Color.Secondary">m</MudText></MudSelectItem>
-                            <MudSelectItem Value="@("ft")"><MudText Color="Color.Secondary">ft</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("m")"><MudText Color="Color.Primary">m</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("ft")"><MudText Color="Color.Primary">ft</MudText></MudSelectItem>
                         </MudSelect>
                     </MudStack>
-                </LabelContent>
             </MudSlider>
 
             
             <MudSlider T="float" Min="0f" Max="2.0f" Step="0.01f"
                        @bind-Value="_vegetationIndex"
-                       Label="Vegetation Index (NDVI)"
                        Variant="Variant.Filled"
                        Color="Color.Success"
                        ValueLabel="true">
-                <LabelContent>
                     <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                         <MudText>Vegitation Index: </MudText>
-                        <MudText Color="Color.Secondary">@_vegetationIndex.ToString()</MudText>
+                        <MudText Color="Color.Primary">@_vegetationIndex.ToString()</MudText>
                         <MudSelect T="string" Dense="true" @bind-Value="_vegUnit" Class="ml-2" Style="width: 80px;">
-                            <MudSelectItem Value="@("NDVI")"><MudText Color="Color.Secondary">NDVI</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("NDVI")"><MudText Color="Color.Primary">NDVI</MudText></MudSelectItem>
                         </MudSelect>
                     </MudStack>
-                </LabelContent>
             </MudSlider>
 
-            <!-- Controls -->
             <MudStack Row="false" Spacing="2" Class="mt-4">
-                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use FireTrustNet" Class="mt-2" Color="Color.Secondary" />
+                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use FireTrustNet" Class="mt-2" Color="Color.Primary" />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
             </MudStack>
         </MudItem>
