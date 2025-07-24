@@ -1,60 +1,27 @@
 ﻿@page "/predictor"
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-
-    <MudHidden Breakpoint="Breakpoint.Md" Hidden="true">
-        <MudTabs Rounded="true" Elevation="2" @bind-ActivePanelIndex="selectedIndex">
-            <MudTabPanel Style="text-transform: none;" Text="🔥 Wildfires">
-                <WildfirePredictor />
-            </MudTabPanel>
-            <MudTabPanel Style="text-transform: none;" Text="🏞️ Fluvial Floods">
-                <FluvialFloodPredictor />
-            </MudTabPanel>
-            <MudTabPanel Style="text-transform: none;" Text="🌧️ Pluvial Floods">
-                <PluvialFloodPredictor />
-            </MudTabPanel>
-            <MudTabPanel Style="text-transform: none;" Text="🌩️ Flash Floods">
-                <FlashFloodPredictor />
-            </MudTabPanel>
-            <MudTabPanel Style="text-transform: none;" Text="🌎 Earthquakes">
-                <EarthquakePredictor />
-            </MudTabPanel>
-            <MudTabPanel Style="text-transform: none;" Text="🌀 Hurricanes">
-                <HuricanePredictor />
-            </MudTabPanel>
-            <MudTabPanel Style="text-transform: none;" Text="🌪️ Tornadoes">
-                <TornadoPredictor />
-            </MudTabPanel>
-        </MudTabs>
-    </MudHidden>
-
-    <MudHidden Breakpoint="Breakpoint.Md" Hidden="false">
-        <MudSelect T="int" Label="Select Hazard" @bind-Value="selectedIndex" Dense="true">
-            <MudSelectItem Value="0">🔥 Wildfires</MudSelectItem>
-            <MudSelectItem Value="1">🏞️ Fluvial Floods</MudSelectItem>
-            <MudSelectItem Value="2">🌧️ Pluvial Floods</MudSelectItem>
-            <MudSelectItem Value="3">🌩️ Flash Floods</MudSelectItem>
-            <MudSelectItem Value="4">🌎 Earthquakes</MudSelectItem>
-            <MudSelectItem Value="5">🌀 Hurricanes</MudSelectItem>
-            <MudSelectItem Value="6">🌪️ Tornadoes</MudSelectItem>
-        </MudSelect>
-
-        <MudPaper Class="mt-4 pa-4" Elevation="1">
-            @switch (selectedIndex)
-            {
-                case 0: <WildfirePredictor /> break;
-                case 1: <FluvialFloodPredictor /> break;
-                case 2: <PluvialFloodPredictor /> break;
-                case 3: <FlashFloodPredictor /> break;
-                case 4: <EarthquakePredictor /> break;
-                case 5: <HuricanePredictor /> break;
-                case 6: <TornadoPredictor /> break;
-            }
-        </MudPaper>
-    </MudHidden>
-
+    <MudTabs Rounded="true" Elevation="2">
+        <MudTabPanel Text="🔥 Wildfires">
+            <WildfirePredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌊 Fluvial Floods">
+            <FluvialFloodPredictor />
+        </MudTabPanel>
+        <MudTabPanel Text="🌧️ Pluvial Floods">
+            @* <PluvialFloodPredictor /> *@
+        </MudTabPanel>
+        <MudTabPanel Text="🌩️ Flash Floods">
+            @* <FlashFloodPredictor /> *@
+        </MudTabPanel>
+        <MudTabPanel Text="🌎 Earthquakes">
+            @* <EarthquakePredictor /> *@
+        </MudTabPanel>
+        <MudTabPanel Text="🌀 Hurricanes">
+            @* <HuricanePredictor /> *@
+        </MudTabPanel>
+        <MudTabPanel Text="🌪️ Tornadoes">
+            @* <TornadoPredictor />*@
+        </MudTabPanel>
+    </MudTabs>
 </MudContainer>
-
-@code {
-    private int selectedIndex = 0;
-}
