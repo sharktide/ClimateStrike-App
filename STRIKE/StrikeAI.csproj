@@ -62,15 +62,11 @@
     </ItemGroup>
 
 	<ItemGroup>
-		<None Update="Models\FireNet.onnx">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Models\FireTrustNet.onnx">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Models\scalers\FireScaler.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+        <None Update="Models\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 	</ItemGroup>
 
 
