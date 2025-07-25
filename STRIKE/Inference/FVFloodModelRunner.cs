@@ -15,7 +15,7 @@ public static class FVFloodModelRunner
 
     static FVFloodModelRunner()
     {
-        var scaler = ScalerLoader.Load("models/scalers/FV-FloodScaler.txt");
+        var scaler = ScalerLoader.Load("Models/scalers/FV-FloodScaler.txt");
 
         InferenceRunner.Initialize("Models/FV-FloodNet.onnx", "Models/FV-FloodTrustNet.onnx", scaler);
     }

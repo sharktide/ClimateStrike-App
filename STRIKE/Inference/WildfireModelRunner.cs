@@ -15,7 +15,7 @@ public static class WildfireModelRunner
 
     static WildfireModelRunner()
     {
-        var scaler = ScalerLoader.Load("models/scalers/FireScaler.txt");
+        var scaler = ScalerLoader.Load("Models/scalers/FireScaler.txt");
 
         InferenceRunner.Initialize("Models/FireNet.onnx", "Models/FireTrustNet.onnx", scaler);
     }
