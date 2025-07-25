@@ -27,13 +27,26 @@ public static class InferenceRunner
 
     public static void Initialize(string baseModelFileName, string trustModelFileName, StandardScaler scaler)
     {
-        _scaler = scaler;
+        try
+        {
+            _scaler = scaler;
 
-        var baseModelPath = Path.Combine(AppContext.BaseDirectory, baseModelFileName);
-        var trustModelPath = Path.Combine(AppContext.BaseDirectory, trustModelFileName);
+            var baseModelPath = Path.Combine(AppContext.BaseDirectory, baseModelFileName);
+            var trustModelPath = Path.Combine(AppContext.BaseDirectory, trustModelFileName);
 
-        _baseSession = new InferenceSession(baseModelPath);
-        _trustSession = new InferenceSession(trustModelPath);
+            _baseSession = new InferenceSession(baseModelPath);
+            _trustSession = new InferenceSession(trustModelPath);
+        }
+        catch (Exception ex)
+        {
+            Exception current = ex;
+            while (current.InnerException != null)
+            {
+                current = current.InnerException;
+                var rootCause = $"Type: {current.GetType().Name} Message: {current.Message} Trace: {current.StackTrace}";
+                Application.Current.MainPage.DisplayAlert("Unhandled Exception", rootCause, "OK");
+            }
+        }
     }
 
     public static float RunPrediction(float[] inputFeatures, bool useTrust)
