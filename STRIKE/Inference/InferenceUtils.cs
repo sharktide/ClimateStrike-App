@@ -7,16 +7,15 @@ using System.Text.Json;
 
 public static class ScalerLoader
 {
-    public static StandardScaler Load(string fileName)
+    public static StandardScaler Load(string relativePath)
     {
-        using var stream = FileSystem.OpenAppPackageFileAsync(fileName).Result;
-        using var reader = new StreamReader(stream);
-        var json = reader.ReadToEnd();
+        var fullPath = Path.Combine(AppContext.BaseDirectory, relativePath);
+        var json = File.ReadAllText(fullPath);
 
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         return JsonSerializer.Deserialize<StandardScaler>(json, options)
-            ?? throw new InvalidOperationException("Failed to load scaler.");
+               ?? throw new InvalidOperationException("Failed to load scaler.");
     }
 }
 
@@ -30,8 +29,8 @@ public static class InferenceRunner
     {
         _scaler = scaler;
 
-        var baseModelPath = ExtractModelToTempFile(baseModelFileName);
-        var trustModelPath = ExtractModelToTempFile(trustModelFileName);
+        var baseModelPath = Path.Combine(AppContext.BaseDirectory, baseModelFileName);
+        var trustModelPath = Path.Combine(AppContext.BaseDirectory, trustModelFileName);
 
         _baseSession = new InferenceSession(baseModelPath);
         _trustSession = new InferenceSession(trustModelPath);
@@ -66,25 +65,6 @@ public static class InferenceRunner
 
         return adjustedProb;
     }
-
-    private static string ExtractModelToTempFile(string fileName)
-    {
-        using var stream = FileSystem.OpenAppPackageFileAsync(fileName).Result;
-
-        var tempPath = Path.Combine(FileSystem.CacheDirectory, fileName);
-
-        var directory = Path.GetDirectoryName(tempPath);
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory!);
-        }
-
-        using var fileStream = File.Create(tempPath);
-        stream.CopyTo(fileStream);
-
-        return tempPath;
-    }
-
 }
 
 public class StandardScaler
