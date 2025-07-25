@@ -71,6 +71,9 @@
         <NativeReference Include="Platforms/iOS/Frameworks/onnxruntime.xcframework">
             <Kind>Framework</Kind>
             <ForceLoad>true</ForceLoad>
+            <IsCxx>true</IsCxx>
+            <SmartLink>false</SmartLink>
+            <LinkerFlags>-lc++</LinkerFlags>
         </NativeReference>
     </ItemGroup>
 
