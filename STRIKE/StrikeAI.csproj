@@ -68,6 +68,10 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
         <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
         <PackageReference Include="MudBlazor" Version="8.9.0" />
+        <NativeReference Include="Platforms/iOS/Frameworks/onnxruntime.xcframework">
+            <Kind>Framework</kind>
+            <ForceLoad>true</ForceLoad>
+        </NativeReference>
     </ItemGroup>
 
 </Project>
