@@ -24,9 +24,6 @@ jobs:
       - name: Install MAUI workload
         run: dotnet workload install maui
 
-      - name: Install ONNX Runtime
-        run: dotnet add package Microsoft.ML.OnnxRuntime
-
       - name: Build IPA
         run: dotnet publish -v STRIKE/StrikeAI.csproj -f net9.0-ios -c Release -p:ArchiveOnBuild=true -p:EnableCodeSigning=false
 
