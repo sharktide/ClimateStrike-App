@@ -31,4 +31,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: StrikeAI-iOS-IPA
-          path: STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
+          path: STRIKE/bin/Release/net9.0-ios/ios-arm64/**
