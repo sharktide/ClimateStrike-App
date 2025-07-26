@@ -24,11 +24,14 @@ jobs:
       - name: Install MAUI workload
         run: dotnet workload install maui
 
+      - name: Install ONNX Runtime
+        run: dotnet add package Microsoft.ML.OnnxRuntime
+
       - name: Build IPA
-        run: dotnet publish STRIKE/StrikeAI.csproj -f net9.0-ios -c Release -p:ArchiveOnBuild=true -p:EnableCodeSigning=false
+        run: dotnet publish -v STRIKE/StrikeAI.csproj -f net9.0-ios -c Release -p:ArchiveOnBuild=true -p:EnableCodeSigning=false
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: StrikeAI-iOS-IPA
-          path: STRIKE/bin/Release/net9.0-ios/ios-arm64/**
+          path: STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/**
