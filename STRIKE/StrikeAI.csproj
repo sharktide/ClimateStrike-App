@@ -68,12 +68,13 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
         <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
         <PackageReference Include="MudBlazor" Version="8.9.0" />
-        <NativeReference Include="Platforms/iOS/Frameworks/onnxruntime.xcframework.zip">
-            <Kind>Framework</Kind>
-            <ForceLoad>true</ForceLoad>
-            <IsCxx>true</IsCxx>
-            <SmartLink>false</SmartLink>
+        <NativeReference Include="dep/onnxruntime.xcframework">
+            <Kind>Static</Kind>
+            <IsCxx>True</IsCxx>
+            <SmartLink>True</SmartLink>
+            <ForceLoad>True</ForceLoad>
             <LinkerFlags>-lc++</LinkerFlags>
+            <WeakFrameworks>CoreML</WeakFrameworks>
         </NativeReference>
     </ItemGroup>
 
