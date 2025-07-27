@@ -60,14 +60,24 @@
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+
     </ItemGroup>
+
+    <Target Name="AddCoreML" Condition="'$(TargetFramework)' == 'net9.0-ios'" AfterTargets="_LoadLinkerOutput" BeforeTargets="_ComputeLinkNativeExecutableInputs">
+		<ItemGroup>
+			<_LinkerFrameworks Include="CoreML" />
+		</ItemGroup>
+	</Target>
 
 	<ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
         <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.22.1" />
         <PackageReference Include="MudBlazor" Version="8.9.0" />
+    </ItemGroup>
+    <ItemGroup>
         <NativeReference Include="dep/onnxruntime.xcframework">
             <Kind>Static</Kind>
             <IsCxx>True</IsCxx>
@@ -75,7 +85,7 @@
             <ForceLoad>True</ForceLoad>
             <LinkerFlags>-lc++</LinkerFlags>
             <WeakFrameworks>CoreML</WeakFrameworks>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </NativeReference>
     </ItemGroup>
-
 </Project>
