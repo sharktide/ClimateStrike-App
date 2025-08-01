@@ -64,5 +64,6 @@
 
 *.cshtml linguist-detectable
 *.razor linguist-detectable
+*.razor linguist-language=C#
 components/* -linguist-vendored
 STRIKE/dep/** linguist-vendored
