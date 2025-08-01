@@ -1,5 +1,5 @@
 namespace STRIKE.InferenceUtils;
-
+#pragma warning disable CS0618
 using System.Text.Json.Serialization;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -21,8 +21,8 @@ public static class ScalerLoader
 
 public static class InferenceRunner
 {
-    private static InferenceSession _baseSession;
-    private static InferenceSession _trustSession;
+    private static InferenceSession ?_baseSession;
+    private static InferenceSession ?_trustSession;
     private static StandardScaler? _scaler;
 
     public static void Initialize(string baseModelFileName, string trustModelFileName, StandardScaler scaler)
@@ -44,7 +44,7 @@ public static class InferenceRunner
             {
                 current = current.InnerException;
                 var rootCause = $"Type: {current.GetType().Name} Message: {current.Message} Trace: {current.StackTrace}";
-                Application.Current.MainPage.DisplayAlert("Unhandled Exception", rootCause, "OK");
+                Application.Current!.MainPage!.DisplayAlert("Unhandled Exception", rootCause, "OK");
             }
         }
     }
@@ -52,7 +52,7 @@ public static class InferenceRunner
     public static float RunPrediction(float[] inputFeatures, bool useTrust)
     {
         var baseTensor = new DenseTensor<float>(inputFeatures, new[] { 1, inputFeatures.Length });
-        var inputName = _baseSession.InputMetadata.Keys.First();
+        var inputName = _baseSession!.InputMetadata.Keys.First();
 
         var baseResults = _baseSession.Run(new[] {
             NamedOnnxValue.CreateFromTensor(inputName, baseTensor)
@@ -66,7 +66,7 @@ public static class InferenceRunner
         {
             var scaled = _scaler.Transform(inputFeatures);
             var trustTensor = new DenseTensor<float>(scaled, new[] { 1, scaled.Length });
-            var trustInputName = _trustSession.InputMetadata.Keys.First();
+            var trustInputName = _trustSession!.InputMetadata.Keys.First();
 
             var trustResults = _trustSession.Run(new[] {
                 NamedOnnxValue.CreateFromTensor(trustInputName, trustTensor)

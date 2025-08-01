@@ -15,7 +15,7 @@ public static class PVFloodModelRunner
 
     static PVFloodModelRunner()
     {
-        var scaler = ScalerLoader.Load("models/scalers/PV-FloodScaler.txt");
+        var scaler = ScalerLoader.Load("Models/scalers/PV-FloodScaler.txt");
 
         InferenceRunner.Initialize("Models/PV-FloodNet.onnx", "Models/PV-FloodTrustNet.onnx", scaler);
     }

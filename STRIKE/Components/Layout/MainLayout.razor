@@ -56,7 +56,7 @@
     private bool _drawerOpen = true;
     private bool _isDarkMode;
     private MudTheme _theme = new();
-    private MudThemeProvider _mudThemeProvider;
+    private MudThemeProvider ?_mudThemeProvider;
 
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
@@ -86,7 +86,7 @@
     {
         if (firstRender)
         {
-            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+            _isDarkMode = await _mudThemeProvider!.GetSystemDarkModeAsync();
             StateHasChanged();
         }
     }
