@@ -65,4 +65,4 @@
 *.cshtml linguist-detectable
 *.razor linguist-detectable
 components/* -linguist-vendored
-STRIKE/dep/* linguist-vendored
+STRIKE/dep/** linguist-vendored
