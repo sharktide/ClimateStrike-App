@@ -7,7 +7,7 @@ public static class FlashFloodModelRunner
     {
         public static string GetLabel(float prob) => prob switch
         {
-            > 0.49f => $"🌧️ FLASH FLOOD LIKELY | {prob:F4}",
+            > 0.49f => $"🌩️ FLASH FLOOD LIKELY | {prob:F4}",
             < 0.44f => $"🛡️ Flash Flood Unlikely | {prob:F4}",
             _      => $"⚠️ Flash Flood Possible | {prob:F4}"
         };

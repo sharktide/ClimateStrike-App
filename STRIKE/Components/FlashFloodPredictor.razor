@@ -1,0 +1,140 @@
+@using STRIKE;
+@using STRIKE.Inference;
+
+<MudPaper Elevation="3" Class="pa-4">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudSlider T="float"
+                       Min="0f"
+                       Max="@RainfallMax"
+                       Step="0.5f"
+                       @bind-Value="_rainfall"
+                       Variant="Variant.Filled"
+                       Color="Color.Success"
+                       ValueLabel="true">
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudText>Rainfall Intensity: </MudText>
+                        <MudText Color="Color.Primary">@_rainfall.ToString()</MudText>
+                        <MudSelect T="string" Dense="true" @bind-Value="_rainfallUnit" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("mm")"><MudText Color="Color.Primary">mm/hr</MudText></MudSelectItem>
+                            <MudSelectItem Value="@("in")"><MudText Color="Color.Primary">in/hr</MudText></MudSelectItem>
+                        </MudSelect>
+                    </MudStack>
+            </MudSlider>
+
+            <MudSlider T="float" Min="0f" Max="45f" Step="1f" @bind-Value="_slope"
+                       Variant="Variant.Filled" Color="Color.Success"
+                       ValueLabel="true">
+                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                            <MudText>Terrain Gradient: </MudText>
+                            <MudText Color="Color.Primary">@_slope.ToString()</MudText>
+                        <MudSelect T="string" Dense="true" @bind-Value="_slopeUnit" Class="ml-2" Style="width: 80px;">
+                                <MudSelectItem Value="@("°")"><MudText Color="Color.Primary">°</MudText></MudSelectItem>
+                            </MudSelect>
+                        </MudStack>
+            </MudSlider>
+
+            <MudSlider T="float"
+                       Min="0"
+                       Max="5"
+                       Step="0.01f"
+                       @bind-Value="_dd"
+                       Variant="Variant.Filled"
+                       Color="Color.Success"
+                       ValueLabel="true">
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudText>Drainage Density: </MudText>
+                        <MudText Color="Color.Primary">@_dd.ToString()</MudText>
+                        <MudSelect T="string" Dense="true" @bind-Value="_ddUnit" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("s")"><MudText Color="Color.Primary">L/A</MudText></MudSelectItem>
+                        </MudSelect>
+                    </MudStack>
+            </MudSlider>
+
+            <MudSlider T="float"
+                       Min="0f"
+                       Max="1f"
+                       Step="0.01f"
+                       @bind-Value="_ui"
+                       Variant="Variant.Filled"
+                       Color="Color.Success"
+                       ValueLabel="true">
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudText>Soil Saturation: </MudText>
+                        <MudText Color="Color.Primary">@_ui.ToString()</MudText>
+                        <MudSelect T="string" Dense="true" @bind-Value="_uiUnit" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("m")"><MudText Color="Color.Primary">VWC</MudText></MudSelectItem>
+                        </MudSelect>
+                    </MudStack>
+            </MudSlider>
+
+            
+            <MudSlider T="float" Min="0f" Max="1f" Step="0.01f"
+                       @bind-Value="_ci"
+                       Variant="Variant.Filled"
+                       Color="Color.Success"
+                       ValueLabel="true">
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudText>Convergence Index: </MudText>
+                        <MudText Color="Color.Primary">@_ci.ToString()</MudText>
+                        <MudSelect T="string" Dense="true" @bind-Value="_ciUnit" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("m")"><MudText Color="Color.Primary">CI</MudText></MudSelectItem>
+                        </MudSelect>
+                    </MudStack>
+            </MudSlider>
+
+            <MudStack Row="false" Spacing="2" Class="mt-4">
+                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use FlashFloodTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h6" Class="mb-2">Prediction Result</MudText>
+            <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    // Values
+    private float _rainfall = 20;
+    private float _slope = 5f;
+    private float _ui = 0.6f;
+    private float _dd = 2.5f;
+    private float _ci = 0.5f;
+    private bool _useTrust = true;
+    private string _rainfallUnit = "mm";
+    private string _slopeUnit = "°";
+    private string _uiUnit = "m";
+    private string _ddUnit = "s";
+    private string _ciUnit = "m";
+
+    private string _predictionResult = "";
+
+    private float RainfallMax => _rainfallUnit switch {
+        "mm" => 150f,
+        _ => 15f
+    };
+
+    private void RunPrediction()
+    {
+        var input = new float[]
+        {
+            _ConvertRainfall(_rainfall, _rainfallUnit),
+            _slope,
+            _dd,
+            _ui,
+            _ci
+        };
+
+        _predictionResult = FlashFloodModelRunner.Predict(input, _useTrust);
+    }
+
+    private float _ConvertRainfall(float value, string unit) =>
+        unit switch
+        {
+            "mm" => value,
+            _ => (value / 25.4f)
+        };
+}
