@@ -9,7 +9,7 @@
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new MainPage()) { Title = "STRIKE" };
+            return new Window(new MainPage()) { Title = "Strike AI 2025" };
         }
     }
 }
