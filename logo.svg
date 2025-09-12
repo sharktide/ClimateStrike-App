@@ -10,7 +10,7 @@
       stroke-width: 2;
       stroke-dasharray: 1000;
       stroke-dashoffset: 1000;
-      animation: drawText 2s ease-out 0.2s forwards;
+      animation: drawText 3s ease-out 0.2s forwards;
     }
 
     .bolt-core {
@@ -81,5 +81,5 @@
 
 
   <!-- Logo Text -->
-  <text x="50" y="120" class="strike-text">Strike AI</text>
+  <text x="50" y="120" class="strike-text">ClimateStrike AI</text>
 </svg>
