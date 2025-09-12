@@ -1,0 +1,85 @@
+<svg width="600" height="200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300display=swap');
+
+    .strike-text {
+      font-family: 'Raleway', sans-serif;
+      font-size: 64px;
+      fill: none;
+      stroke: #00bfff;
+      stroke-width: 2;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: drawText 2s ease-out 0.2s forwards;
+    }
+
+    .bolt-core {
+      fill: none;
+      stroke: gold;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transform-origin: 430px 100px;
+      animation: strikeBolt 0.3s ease-out 1.2s forwards;
+    }
+
+    .bolt-glow {
+      fill: none;
+      stroke: rgba(255, 215, 0, 0.4);
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transform-origin: 430px 100px;
+      animation: strikeBoltGlow 0.3s ease-out 1.2s forwards;
+    }
+
+    .flash {
+      fill: white;
+      opacity: 0;
+      animation: flashBang 0.2s ease-out 0.0s forwards;
+    }
+
+    @keyframes drawText {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes strikeBolt {
+      0% {
+        opacity: 0;
+        transform: scale(0.5) rotate(-20deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1.2) rotate(0deg);
+      }
+    }
+
+    @keyframes strikeBoltGlow {
+      0% {
+        opacity: 0;
+        transform: scale(0.5) rotate(-20deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1.2) rotate(0deg);
+      }
+    }
+
+    @keyframes flashBang {
+      0% { opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { opacity: 0; }
+    }
+  </style>
+
+  <!-- Flash effect -->
+  <rect class="flash" x="0" y="0" width="600" height="200" />
+
+
+  <!-- Logo Text -->
+  <text x="50" y="120" class="strike-text">Strike AI</text>
+</svg>
