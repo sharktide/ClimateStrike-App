@@ -90,7 +90,7 @@
         </MudItem>
 
         <MudItem xs="12" sm="6">
-            <MudText Typo="Typo.h6" Class="mb-2">Prediction Result</MudText>
+            <MudText Typo="Typo.h6" Class="mb-2">Flash Flood Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
         </MudItem>
     </MudGrid>
@@ -135,6 +135,6 @@
         unit switch
         {
             "mm" => value,
-            _ => (value / 25.4f)
+            _ => (value * 25.4f)
         };
 }

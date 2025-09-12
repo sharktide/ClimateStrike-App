@@ -1,0 +1,108 @@
+@using STRIKE
+@using STRIKE.Inference
+
+<MudPaper Elevation="3" Class="pa-4">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudSlider T="float" Min="@SSTMin" Max="@SSTMax" Step="0.1f" @bind-Value="_sst"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Sea Surface Temperature:</MudText>
+                    <MudText Color="Color.Primary">@_sst.ToString("0.00")</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_sstUnit" Class="ml-2" Style="width: 80px;">
+                        <MudSelectItem Value="@("C")"><MudText Color="Color.Primary">°C</MudText></MudSelectItem>
+                        <MudSelectItem Value="@("F")"><MudText Color="Color.Primary">°F</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="20f" Max="150f" Step="1f" @bind-Value="_ohc"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Ocean Heat Content:</MudText>
+                    <MudText Color="Color.Primary">@_ohc.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_1" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("1")"><MudText Color="Color.Primary">kJ/cm²</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="20f" Max="100f" Step="1f" @bind-Value="_humidity"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Mid-Level Humidity:</MudText>
+                    <MudText Color="Color.Primary">@_humidity.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_2" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("2")"><MudText Color="Color.Primary">%</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="30f" Step="1f" @bind-Value="_shear"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Vertical Wind Shear:</MudText>
+                    <MudText Color="Color.Primary">@_shear.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_3" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("3")"><MudText Color="Color.Primary">m/s</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0.0f" Max="3.0f" Step="0.01f" @bind-Value="_vorticity"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Potential Vorticity:</MudText>
+                    <MudText Color="Color.Primary">@_vorticity.ToString("0.00")</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_4" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("4")"><MudText Color="Color.Primary">PVU</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudStack Row="false" Spacing="2" Class="mt-4">
+                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use HurricaneTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
+            </MudStack>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h6" Class="mb-2">Hurricane Formation Verdict</MudText>
+            <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private float _sst = 29.0f;
+    private string _sstUnit = "C";
+    private float _ohc = 95f;
+    private float _humidity = 65f;
+    private float _shear = 9f;
+    private float _vorticity = 1.2f;
+    private bool _useTrust = true;
+    private string _predictionResult = "";
+    private float SSTMin => _sstUnit == "F" ? 40f : 24f;
+    private float SSTMax => _sstUnit == "F" ? 140f : 32f;
+
+    private string _1 = "1";
+    private string _2 = "2";
+    private string _3 = "3";
+    private string _4 = "4";
+
+    private void RunPrediction()
+    {
+        var input = new float[]
+        {
+            ConvertTemperature(_sst, _sstUnit),
+            _ohc,
+            _humidity,
+            _shear,
+            _vorticity
+        };
+
+        _predictionResult = HurricaneModelRunner.Predict(input, _useTrust);
+    }
+
+    private float ConvertTemperature(float value, string unit) =>
+        unit switch
+        {
+            "C" => value,
+            "F" => (value - 32f) * 5f / 9f,
+            _ => value
+        };
+}

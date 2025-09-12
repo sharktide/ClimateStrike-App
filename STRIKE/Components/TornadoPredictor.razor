@@ -1,0 +1,97 @@
+@using STRIKE
+@using STRIKE.Inference
+
+<MudPaper Elevation="3" Class="pa-4">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudSlider T="float" Min="100f" Max="500f" Step="1f" @bind-Value="_srh"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Storm Relative Helicity (SRH):</MudText>
+                    <MudText Color="Color.Primary">@_srh.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_1" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("1")"><MudText Color="Color.Primary">m²/s²</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="4000f" Step="1f" @bind-Value="_cape"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>CAPE:</MudText>
+                    <MudText Color="Color.Primary">@_cape.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_2" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("2")"><MudText Color="Color.Primary">J/Kg</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="300f" Max="2000f" Step="1f" @bind-Value="_lcl"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Lifted Condensation Level (LCL):</MudText>
+                    <MudText Color="Color.Primary">@_lcl.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_3" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("3")"><MudText Color="Color.Primary">m</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="30f" Step="1f" @bind-Value="_shear"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Bulk Wind Shear:</MudText>
+                    <MudText Color="Color.Primary">@_shear.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_4" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("4")"><MudText Color="Color.Primary">m/s</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0.0f" Max="5.0f" Step="0.01f" @bind-Value="_stp"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Significant Tornado Parameter (STP):</MudText>
+                    <MudText Color="Color.Primary">@_stp.ToString("0.00")</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_5" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("5")"><MudText Color="Color.Primary">STP</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudStack Row="false" Spacing="2" Class="mt-4">
+                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use TornadoTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
+            </MudStack>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h6" Class="mb-2">Tornado Formation Verdict</MudText>
+            <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private float _srh = 280f;
+    private float _cape = 3000f;
+    private float _lcl = 950f;
+    private float _shear = 12f;
+    private float _stp = 1.8f;
+    private bool _useTrust = true;
+    private string _predictionResult = "";
+
+    private string _1 = "1";
+    private string _2 = "2";
+    private string _3 = "3";
+    private string _4 = "4";
+    private string _5 = "5";
+
+    private void RunPrediction()
+    {
+        var input = new float[]
+        {
+            _srh,
+            _cape,
+            _lcl,
+            _shear,
+            _stp
+        };
+
+        _predictionResult = TornadoModelRunner.Predict(input, _useTrust);
+    }
+}

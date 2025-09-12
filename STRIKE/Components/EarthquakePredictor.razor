@@ -1,0 +1,93 @@
+@using STRIKE
+@using STRIKE.Inference
+
+<MudPaper Elevation="3" Class="pa-4">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudSlider T="float" Min="0.5f" Max="25.0f" Step="0.1f" @bind-Value="_momentRate"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Seismic Moment Rate:</MudText>
+                    <MudText Color="Color.Primary">@_momentRate.ToString("0.00")</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_1" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("1")"><MudText Color="Color.Primary">×10¹⁶ Nm/s</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="100f" Step="1f" @bind-Value="_displacementRate"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Surface Displacement Rate:</MudText>
+                    <MudText Color="Color.Primary">@_displacementRate.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_2" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("2")"><MudText Color="Color.Primary">mm/yr</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="700f" Step="1f" @bind-Value="_stressChange"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Coulomb Stress Change:</MudText>
+                    <MudText Color="Color.Primary">@_stressChange.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_3" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("3")"><MudText Color="Color.Primary">Pa</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="60f" Step="1f" @bind-Value="_focalDepth"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Average Focal Depth:</MudText>
+                    <MudText Color="Color.Primary">@_focalDepth.ToString()</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_4" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("4")"><MudText Color="Color.Primary">km</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudSlider T="float" Min="0f" Max="20f" Step="0.1f" @bind-Value="_slipRate"
+                       Variant="Variant.Filled" Color="Color.Success" ValueLabel="true">
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText>Fault Slip Rate:</MudText>
+                    <MudText Color="Color.Primary">@_slipRate.ToString("0.00")</MudText>
+                    <MudSelect T="string" Dense="true" @bind-Value="_5" Class="ml-2" Style="width: 80px;">
+                            <MudSelectItem Value="@("5")"><MudText Color="Color.Primary">mm/yr</MudText></MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+            </MudSlider>
+            <MudStack Row="false" Spacing="2" Class="mt-4">
+                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use QuakeTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
+            </MudStack>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h6" Class="mb-2">Earthquake Risk Verdict</MudText>
+            <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private float _momentRate = 15.0f;
+    private float _displacementRate = 35f;
+    private float _stressChange = 300f;
+    private float _focalDepth = 18f;
+    private float _slipRate = 7.0f;
+    private bool _useTrust = true;
+    private string _predictionResult = "";
+    private string _1 = "1";
+    private string _2 = "2";
+    private string _3 = "3";
+    private string _4 = "4";
+    private string _5 = "5";
+
+    private void RunPrediction()
+    {
+        var input = new float[]
+        {
+            _momentRate, _displacementRate, _stressChange, _focalDepth, _slipRate
+        };
+        _predictionResult = QuakeModelRunner.Predict(
+            input, _useTrust
+        );
+    }
+}
