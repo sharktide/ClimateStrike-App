@@ -78,8 +78,8 @@
 
   <!-- Flash effect -->
   <rect class="flash" x="0" y="0" width="600" height="200" />
-
+  <script>alert("1")</script>
 
   <!-- Logo Text -->
-  <text x="50" y="120" class="strike-text">ClimateStrike AI</text>
+  <text x="50" y="120" class="strike-text">ClimateStrikeAI</text>
 </svg>
