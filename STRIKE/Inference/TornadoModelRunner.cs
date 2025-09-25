@@ -3,6 +3,10 @@ using STRIKE.InferenceUtils;
 
 public static class TornadoModelRunner
 {
+    public static string[] GetNames()
+    {
+        return ["Storm Relative Helicity", "CAPE", "Lifted Condensation Level", "Bulk Wind Shear", "Significant Tornado Parameter"];
+    }
     private static class Eval
     {
         public static string GetLabel(float prob) => prob switch
@@ -22,7 +26,11 @@ public static class TornadoModelRunner
 
     public static string Predict(float[] inputFeatures, bool useTrust)
     {
+        var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        return Eval.GetLabel(adjustedProb);
+        string label =  Eval.GetLabel(adjustedProb);
+        SysIO.SavePrediction("🌪️ Tornado", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
+        return label;
     }
 }

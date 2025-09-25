@@ -1,9 +1,74 @@
 ﻿@page "/"
+@inject STRIKE.Services.IDashboardDataService DashboardDataService
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <MudText Typo="Typo.h5" Class="mt-4 mb-2">🌍 Dashboard</MudText>
-    <MudPaper Elevation="3" Class="pa-4">
-        <MudText Typo="Typo.subtitle1">This section will soon display live climate analytics, prediction summaries, and confidence metrics.</MudText>
-    </MudPaper>
-
+    <MudText Typo="Typo.h4" Class="mt-4 mb-2">🌍 Dashboard</MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">Quick Access</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/predictor" Class="me-2 mb-2">Go to Predictor</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/" Class="mb-2">Refresh Dashboard</MudButton>
+            </MudPaper>
+            <MudPaper Elevation="3" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">Model Accuracy</MudText>
+                @if (ModelConfidences != null)
+                {
+                    @foreach (var kvp in ModelConfidences)
+                    {
+                        <MudText Typo="Typo.body2">@kvp.Key: @(kvp.Value * 100)%</MudText>
+                        <MudProgressLinear Value="@(kvp.Value * 100)" Color="Color.Primary" Class="mb-2" />
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">Loading...</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">Recent Predictions</MudText>
+                <MudList T="string">
+                    @if (RecentPredictionsTruncated == null)
+                    {
+                        <MudListItem T="string" Value="@("Loading")">Loading...</MudListItem>
+                    }
+                    else if (!RecentPredictions!.Any())
+                    {
+                        <MudListItem T="string" Value="@("Empty")">
+                            <i>No predictions yet. Run a model to see results here!</i>
+                        </MudListItem>
+                    }
+                    else
+                    {
+                        @foreach (var pred in RecentPredictionsTruncated)
+                        {
+                            <MudListItem T="string" Value="@pred.DisasterType">
+                                <b>@pred.DisasterType</b> - <b>@pred.Label</b> - @pred.Timestamp.ToString("dd MMM yyyy HH:mm")
+                            </MudListItem>
+                        }
+                        <MudListItem T="string" Value="@("HistoryLink")">
+                            <MudButton Variant="Variant.Text" Href="/history">View Full History</MudButton>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
+
+@code {
+    private string[] Labels = Array.Empty<string>();
+    private MudBlazor.ChartSeries[] Datasets = Array.Empty<MudBlazor.ChartSeries>();
+    private Dictionary<string, float>? ModelConfidences;
+    private List<STRIKE.Services.PredictionResult>? RecentPredictions;
+    private List<STRIKE.Services.PredictionResult>? RecentPredictionsTruncated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ModelConfidences = await DashboardDataService.GetModelConfidencesAsync();
+        RecentPredictions = await DashboardDataService.GetRecentPredictionsAsync();
+        RecentPredictionsTruncated = RecentPredictions?.Take(5).ToList();
+    }
+}

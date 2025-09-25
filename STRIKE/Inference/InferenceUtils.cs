@@ -4,25 +4,31 @@ using System.Text.Json.Serialization;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using System.Text.Json;
+using System.IO;
+using Microsoft.Maui.Storage;
+using Microsoft.Maui.Controls;
 
 public static class ScalerLoader
 {
+    private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
     public static StandardScaler Load(string relativePath)
     {
         var fullPath = Path.Combine(AppContext.BaseDirectory, relativePath);
         var json = File.ReadAllText(fullPath);
 
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        return JsonSerializer.Deserialize<StandardScaler>(json, options)
+        return JsonSerializer.Deserialize<StandardScaler>(json, CachedJsonOptions)
                ?? throw new InvalidOperationException("Failed to load scaler.");
     }
 }
 
 public static class InferenceRunner
 {
-    private static InferenceSession ?_baseSession;
-    private static InferenceSession ?_trustSession;
+    private static InferenceSession? _baseSession;
+    private static InferenceSession? _trustSession;
     private static StandardScaler? _scaler;
 
     public static void Initialize(string baseModelFileName, string trustModelFileName, StandardScaler scaler)
@@ -44,7 +50,6 @@ public static class InferenceRunner
             {
                 current = current.InnerException;
                 var rootCause = $"Type: {current.GetType().Name} Message: {current.Message} Trace: {current.StackTrace}";
-                Application.Current!.MainPage!.DisplayAlert("Unhandled Exception", rootCause, "OK");
             }
         }
     }
@@ -78,6 +83,73 @@ public static class InferenceRunner
 
         return adjustedProb;
     }
+
+    public static string RenameLabel(string label)
+    {
+        if (label.Contains("LIKELY"))
+        {
+            return "High Risk";
+        }
+        else if (label.Contains("Possible"))
+        {
+            return "Medium Risk";
+        }
+        else
+        {
+            return "Low Risk";
+        }
+    }
+    public static readonly Dictionary<string, string> FeatureUnits = new()
+    {
+        // Earthquake
+        { "Seismic Moment Rate", "×10¹⁶ Nm/s" },
+        { "Surface Displacement Rate", "mm/yr" },
+        { "Coulomb Stress Change", "Pa" },
+        { "Average Focal Depth", "km" },
+        { "Fault Slip Rate", "mm/yr" },
+
+        // Flash Flood
+        { "Rainfall Intensity", "mm" },
+        { "Slope", "°" },
+        { "Drainage Density", "s" },
+        { "Soil Saturation", "m" },
+        { "Convergence Index", "m" },
+
+        // Fluvial Flood
+        { "Rainfall", "mm" },
+        { "River Water Level", "mm" },
+        { "Relative Slope", "s" },
+        { "Elevation", "m" },
+        { "Distance to River", "m" },
+
+        // Pluvial Flood
+        { "Rainfall Intensity (Pluvial)", "mm" },
+        { "Imperviousness", "mm" },
+        { "Drainage Density (Pluvial)", "s" },
+        { "Urbanization Index", "m" },
+        { "Convergence Index (Pluvial)", "m" },
+
+        // Hurricane
+        { "Sea Surface Temperature", "°C/°F" },
+        { "Ocean Heat Content", "kJ/cm²" },
+        { "Mid-Level Humidity", "%" },
+        { "Vertical Wind Shear", "m/s" },
+        { "Potential Vorticity", "PVU" },
+
+        // Tornado
+        { "Storm Relative Helicity (SRH)", "m²/s²" },
+        { "CAPE", "J/Kg" },
+        { "Lifted Condensation Level (LCL)", "m" },
+        { "Bulk Wind Shear", "m/s" },
+        { "Significant Tornado Parameter (STP)", "STP" },
+
+        // Wildfire
+        { "Temperature", "K" },
+        { "Humidity (Wildfire)", "%" },
+        { "Wind Speed", "m/s" },
+        { "Vegetation Index", "NDVI" },
+    };
+
 }
 
 public class StandardScaler
@@ -101,4 +173,86 @@ public class StandardScaler
         }
         return scaled;
     }
+}
+
+
+
+public static class SysIO
+{
+    private static readonly JsonSerializerOptions CachedJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
+    public static readonly string appDataPath = FileSystem.AppDataDirectory;
+    public static readonly string recentPredictions = Path.Combine(appDataPath ?? "./", "predictions.json");
+
+    public static string SavePrediction(string disasterType, string label, float probability, bool trust, Dictionary<string, float> inputs)
+    {
+        var prediction = new STRIKE.Services.PredictionResult
+        {
+            DisasterType = disasterType,
+            Label = label,
+            Probability = probability,
+            Trust = trust,
+            Inputs = inputs,
+            Timestamp = DateTime.Now
+        };
+
+        List<STRIKE.Services.PredictionResult> history;
+
+        try
+        {
+            if (File.Exists(recentPredictions))
+            {
+                var json = File.ReadAllText(recentPredictions);
+                history = JsonSerializer.Deserialize<List<STRIKE.Services.PredictionResult>>(json) ?? [];
+            }
+            else
+            {
+                history = [];
+            }
+        }
+        catch
+        {
+            history = [];
+        }
+
+        history.Insert(0, prediction);
+
+        var outJson = JsonSerializer.Serialize(history, CachedJsonOptions);
+        File.WriteAllText(recentPredictions, outJson);
+        return $"written text to {recentPredictions}. Data: {outJson}";
+    }
+    public static List<STRIKE.Services.PredictionResult> GetPredictionHistory()
+    {
+        if (File.Exists(recentPredictions))
+        {
+            var json = File.ReadAllText(recentPredictions);
+            var history = JsonSerializer.Deserialize<List<STRIKE.Services.PredictionResult>>(json, CachedJsonOptions);
+            return history ?? [];
+        }
+        else
+        {
+            return [];
+        }
+    }
+    public static void DeletePrediction(DateTime timestamp)
+    {
+        if (!File.Exists(recentPredictions)) return;
+        var json = File.ReadAllText(recentPredictions);
+        var history = JsonSerializer.Deserialize<List<STRIKE.Services.PredictionResult>>(json, CachedJsonOptions) ?? [];
+        var newHistory = history.Where(p => p.Timestamp != timestamp).ToList();
+        var outJson = JsonSerializer.Serialize(newHistory, CachedJsonOptions);
+        File.WriteAllText(recentPredictions, outJson);
+    }
+
+    public static void DeleteAllPredictions()
+    {
+        if (File.Exists(recentPredictions))
+        {
+            File.Delete(recentPredictions);
+        }
+    }
+
 }

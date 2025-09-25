@@ -3,6 +3,10 @@ using STRIKE.InferenceUtils;
 
 public static class HurricaneModelRunner
 {
+    public static string[] GetNames()
+    {
+        return ["Sea Surface Temperature", "Ocean Heat Content", "Mid-Level Humidity", "Vertical Wind Shear", "Potential Vorticity"];
+    }
     private static class Eval
     {
         public static string GetLabel(float prob) => prob switch
@@ -22,7 +26,11 @@ public static class HurricaneModelRunner
 
     public static string Predict(float[] inputFeatures, bool useTrust)
     {
+        var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        return Eval.GetLabel(adjustedProb);
+        string label =  Eval.GetLabel(adjustedProb);
+        SysIO.SavePrediction("🌀 Hurricane", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
+        return label;
     }
 }

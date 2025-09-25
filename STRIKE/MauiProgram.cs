@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MudBlazor;
 using MudBlazor.Services;
-
+using STRIKE.Services;
 
 namespace STRIKE
 {
@@ -19,6 +19,7 @@ namespace STRIKE
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddMudServices();
+            builder.Services.AddSingleton<IDashboardDataService, MockDashboardDataService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

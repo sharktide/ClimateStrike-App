@@ -1,0 +1,142 @@
+@page "/history"
+@inject STRIKE.Services.IDashboardDataService DashboardDataService
+@using STRIKE.Services
+@using STRIKE.InferenceUtils
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudText Typo="Typo.h4" Class="mt-4 mb-2">📜 Prediction History</MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">All Predictions</MudText>
+                <MudList T="string">
+                    @if (AllPredictions == null)
+                    {
+                        <MudListItem T="string" Value="@("Loading")">Loading...</MudListItem>
+                    }
+                    else if (!AllPredictions.Any())
+                    {
+                        <MudListItem T="string" Value="@("Empty")">
+                            <i>No predictions yet. Run a model to see results here!</i>
+                        </MudListItem>
+                    }
+                    else
+                    {
+                        @foreach (var pred in AllPredictions)
+                        {
+                            <MudListItem T="string" @onclick="() => SelectPrediction(pred)"Style="cursor:pointer;">
+                                <b>@pred.DisasterType</b> - <b>@pred.Label</b> - @pred.Timestamp.ToString("dd MMM yyyy HH:mm")
+                            </MudListItem>
+                        }
+                    }
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">Prediction Details</MudText>
+                @if (SelectedPrediction == null)
+                {
+                    <MudText Typo="Typo.body2">Select a prediction to view details.</MudText>
+                }
+                else
+                {
+                    <MudStack Row="true" Spacing="2" Class="mb-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteSelectedPrediction">Delete</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAllPredictions">Delete All</MudButton>
+                    </MudStack>
+                    <MudTable Items="GetPredictionRows()" T="RowData">
+                        <HeaderContent>
+                            <MudTh>Field</MudTh>
+                            <MudTh>Value</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.Value</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+
+                    <MudTable Items="GetDisplayInputs()" T="InputDisplayRow">
+                        <HeaderContent>
+                            <MudTh>Feature</MudTh>
+                            <MudTh>Value</MudTh>
+                            <MudTh>Unit</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.Value</MudTd>
+                            <MudTd>@context.Unit</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+
+    
+    private List<PredictionResult>? AllPredictions;
+    private PredictionResult? SelectedPrediction;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshPredictions();
+    }
+
+    private async Task RefreshPredictions()
+    {
+        AllPredictions = await DashboardDataService.GetRecentPredictionsAsync();
+        StateHasChanged();
+    }
+
+    private async Task DeleteSelectedPrediction()
+    {
+        if (SelectedPrediction != null)
+        {
+            await DashboardDataService.DeletePredictionAsync(SelectedPrediction.Timestamp);
+            SelectedPrediction = null;
+            await RefreshPredictions();
+        }
+    }
+
+    private async Task DeleteAllPredictions()
+    {
+        await DashboardDataService.DeleteAllPredictionsAsync();
+        SelectedPrediction = null;
+        await RefreshPredictions();
+    }
+
+    private void SelectPrediction(STRIKE.Services.PredictionResult pred)
+    {
+        SelectedPrediction = pred;
+    }
+    private List<InputDisplayRow> GetDisplayInputs()
+    {
+        if (SelectedPrediction?.Inputs == null)
+            return new();
+
+        return SelectedPrediction.Inputs.Select(kvp => new InputDisplayRow
+        {
+            Name = kvp.Key,
+            Value = kvp.Value,
+            Unit = InferenceRunner.FeatureUnits.TryGetValue(kvp.Key, out var unit) ? unit : "—"
+        }).ToList();
+    }
+    private List<RowData> GetPredictionRows()
+    {
+        if (SelectedPrediction == null)
+            return new List<RowData>();
+
+        return new List<RowData>
+        {
+            new() { Name = "Disaster Type", Value = SelectedPrediction.DisasterType },
+            new() { Name = "Label", Value = SelectedPrediction.Label },
+            new() { Name = "Probability", Value = $"{SelectedPrediction.Probability * 100:F2}%" },
+            new() { Name = "Trust Used", Value = SelectedPrediction.Trust.ToString() },
+            new() { Name = "Timestamp", Value = SelectedPrediction.Timestamp.ToString("dd MMM yyyy HH:mm:ss") }
+        };
+    }
+}

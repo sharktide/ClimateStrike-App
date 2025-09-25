@@ -3,6 +3,10 @@ using STRIKE.InferenceUtils;
 
 public static class FlashFloodModelRunner
 {
+    public static string[] GetNames()
+    {
+        return ["Rainfall Intensity", "Terrain Gradient", "Drainage Density", "Soil Saturation", "Convergence Index"];
+    }
     private static class Eval
     {
         public static string GetLabel(float prob) => prob switch
@@ -22,7 +26,11 @@ public static class FlashFloodModelRunner
 
     public static string Predict(float[] inputFeatures, bool useTrust)
     {
+        var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        return Eval.GetLabel(adjustedProb);
+        string label = Eval.GetLabel(adjustedProb);
+        SysIO.SavePrediction("🌩️ Flash Flood", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
+        return label;
     }
 }

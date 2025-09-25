@@ -15,7 +15,7 @@
 
             <MudItem xs="6" Class="d-flex justify-center align-self-center">
                 <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    <MudText Typo="Typo.subtitle1" style="color: #528AAE" Class="ml-2" >StrikeAI</MudText>
+                    <MudText Typo="Typo.subtitle1" style="color: #528AAE" Class="ml-2" >ClimateStrike AI v1.0.0</MudText>
                 </MudHidden>
             </MudItem>
 
@@ -25,8 +25,8 @@
                         <MudPaper Class="pa-2" Style="min-width: 200px;">
                             <MudSwitch @bind-Value="_isDarkMode" T="bool" Label="Dark Mode" Class="mb-2" />
                             <MudDivider />
-                            <MudButton Variant="Variant.Text" Color="Color.Default" Class="mt-2" FullWidth="true">Login</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true">Logout</MudButton>
+                            @* <MudButton Variant="Variant.Text" Color="Color.Default" Class="mt-2" FullWidth="true">Login</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true">Logout</MudButton> *@
                         </MudPaper>
                     </MudMenu>
 
@@ -34,8 +34,8 @@
 
                 <MudHidden Breakpoint="Breakpoint.SmAndDown">
                     <MudSwitch @bind-Value="_isDarkMode" T="bool" style="color: #528AAE" Label="Dark Mode" Class="mx-2 align-self-center" />
-                    <MudButton Variant="Variant.Text" Color="Color.Default" Class="ml-2 align-self-center">Login</MudButton>
-                    <MudButton Variant="Variant.Text" Color="Color.Default" class="align-self-center">Logout</MudButton>
+                    @* <MudButton Variant="Variant.Text" Color="Color.Default" Class="ml-2 align-self-center">Login</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" class="align-self-center">Logout</MudButton> *@
                 </MudHidden>
             </MudItem>
         </MudGrid>
