@@ -1,4 +1,4 @@
-name: Publish ClimateStrike App
+name: Build For Windows x64 and aarch64
 
 on:
   workflow_dispatch:
@@ -23,6 +23,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+      - name: Setup .NET MAUI
+        run : dotnet workload install maui
 
       - name: Restore dependencies
         run: dotnet restore ${{ env.PROJECT_PATH }}
@@ -32,8 +35,9 @@ jobs:
           dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true
     
       - name: Create Installer for x64
-        run: |
-          iscc PCBuild/Setup-amd64.iss
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: PCBuild/Setup-amd64.iss
 
       - name: Create zip for x64
         run: |
@@ -61,6 +65,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+      - name: Setup .NET MAUI
+        run: dotnet workload install maui
 
       - name: Restore dependencies
         run: dotnet restore ${{ env.PROJECT_PATH }}
@@ -69,9 +76,10 @@ jobs:
         run: |
           dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true
     
-      - name: Create Installer for x64
-        run: |
-          iscc PCBuild/Setup-arm.iss
+      - name: Create Installer for aarch64
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: PCBuild/Setup-arm.iss
 
       - name: Create zip for x64
         run: |
