@@ -46,7 +46,7 @@ jobs:
           path: redist/*
 
   Build-aarch64:
-    runs-on: windows-latest
+    runs-on: windows-arm
 
     env:
       DOTNET_VERSION: '9.0.x'
