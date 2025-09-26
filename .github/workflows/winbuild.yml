@@ -32,7 +32,7 @@ jobs:
 
       - name: Publish x64
         run: |
-          dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true
+          dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true -f net9.0-windows10.0.19041.0
     
       - name: Create Installer for x64
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
@@ -74,7 +74,7 @@ jobs:
 
       - name: Publish aarch64
         run: |
-          dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true
+          dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true -f net9.0-windows10.0.19041.0
     
       - name: Create Installer for aarch64
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
