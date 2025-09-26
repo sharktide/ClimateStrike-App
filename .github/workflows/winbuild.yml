@@ -44,7 +44,7 @@ jobs:
           tar -a -c -f redist/ClimateStrike-Unpacked-x64.zip STRIKE\bin\Release\net9.0-windows10.0.19041.0\win10-x64
 
       - name: Upload published binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Windows AMD64 Binaries
           path: redist/*
@@ -86,7 +86,7 @@ jobs:
           tar -a -c -f redist/ClimateStrike-Unpacked-aarch64.zip STRIKE\bin\Release\net9.0-windows10.0.19041.0\win10-arm64
 
       - name: Upload published binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Windows ARM Binaries
           path: redist/*
