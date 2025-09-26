@@ -1,0 +1,87 @@
+name: Publish ClimateStrike App
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  Build-x64:
+    runs-on: windows-latest
+
+    env:
+      DOTNET_VERSION: '9.0.x'
+      CONFIGURATION: Release
+      PROJECT_PATH: STRIKE/StrikeAI.csproj
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Publish x64
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true
+    
+      - name: Create Installer for x64
+        run: |
+          iscc PCBuild/Setup-amd64.iss
+
+      - name: Create zip for x64
+        run: |
+          tar -a -c -f redist/ClimateStrike-Unpacked-x64.zip STRIKE\bin\Release\net9.0-windows10.0.19041.0\win10-x64
+
+      - name: Upload published binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows AMD64 Binaries
+          path: redist/*
+
+  Build-aarch64:
+    runs-on: windows-latest
+
+    env:
+      DOTNET_VERSION: '9.0.x'
+      CONFIGURATION: Release
+      PROJECT_PATH: STRIKE/StrikeAI.csproj
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Publish aarch64
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true
+    
+      - name: Create Installer for x64
+        run: |
+          iscc PCBuild/Setup-arm.iss
+
+      - name: Create zip for x64
+        run: |
+          tar -a -c -f redist/ClimateStrike-Unpacked-aarch64.zip STRIKE\bin\Release\net9.0-windows10.0.19041.0\win10-arm64
+
+      - name: Upload published binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows ARM Binaries
+          path: redist/*
+
+
+

@@ -1,0 +1,23 @@
+DISCLAIMER:
+
+ClimateStrike AI, (we, us, I, ClimateStrike AI),
+is an artificially intelligent system for the sole
+purpose of the prediction of Nautral Disasters.
+However, ClimateStrike AI is powered by artificially 
+intelligent systems, and mistakes are possible.
+
+WE ARE NOT LIABLE FOR ANY DAMAGES OR INACCURACIES
+CAUSED BY THIS SOFTWARE. THIS SOFTWARE IS LICENSED
+UNDER THE TERMS OF THE APACHE-2.0 LICENSE AND IS
+PROVIDED AS-IS WITH NO LIABILITY OR WARRANTY
+WHATSOEVER. USE THIS SOFTWARE AT YOUR OWN RISK
+
+We are not affialated with any other companies such as
+GitHub, HuggingFace, or STRIKE.
+
+This is an open source project available at
+https://github.com/sharktide/cliamtestrike-core
+https://github.com/sharktide/climatestrrike-app
+
+Model files are available for downloading at
+https://huggingface.com/sharktide
