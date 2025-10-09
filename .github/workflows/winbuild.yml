@@ -37,7 +37,7 @@ jobs:
       - name: Create Installer for x64
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: PCBuild/Setup-amd64.iss
+          path: Setup-amd64.iss
 
       - name: Create zip for x64
         run: |
@@ -79,7 +79,7 @@ jobs:
       - name: Create Installer for aarch64
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: PCBuild/Setup-arm.iss
+          path: Setup-arm.iss
 
       - name: Create zip for x64
         run: |
