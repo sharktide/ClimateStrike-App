@@ -60,6 +60,28 @@
             </MudStack>
         </MudItem>
         <MudItem xs="12" sm="6">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Feature Definitions</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <strong>Storm Relative Helicity (SRH):</strong> Measures potential for rotating updrafts <br /><br />
+
+                        <strong>CAPE (J/kg):</strong> Buoyant energy available for strong vertical motion <br /><br />
+
+                        <strong>Lifted Condensation Level (LCL) [m]:</strong> Lower values favor low-level vortex development <br /><br />
+
+                        <strong>0-6 km Bulk Wind Shear [m/s]:</strong> Change in wind speed and direction on the surface within 6km.<br /><br />
+
+                        <strong>Significant Tornado Parameter (STP):</strong> Significant Tornado Parameter Rating
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            <br />
             <MudText Typo="Typo.h6" Class="mb-2">Tornado Formation Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
         </MudItem>

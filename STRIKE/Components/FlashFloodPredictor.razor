@@ -90,10 +90,33 @@
         </MudItem>
 
         <MudItem xs="12" sm="6">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Feature Definitions</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <strong>Rainfall Intensity:</strong> Rainfall rate in mm/hr or in/hr. <br /><br />
+
+                        <strong>Terrain Gradient:</strong> Slope of the terrain in degrees. <br /><br />
+
+                        <strong>Drainage Density:</strong> Total stream length per unit area. <br /><br />
+
+                        <strong>Soil Saturation:</strong> Volumetric water content (VWC). <br /><br />
+
+                        <strong>Convegence Index:</strong> Topographical tendency to channel runoff.
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            <br />
             <MudText Typo="Typo.h6" Class="mb-2">Flash Flood Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
         </MudItem>
     </MudGrid>
+
 </MudPaper>
 
 @code {

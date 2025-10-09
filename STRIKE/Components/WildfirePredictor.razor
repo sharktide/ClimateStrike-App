@@ -95,10 +95,63 @@
         </MudItem>
 
         <MudItem xs="12" sm="6">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Feature Definitions</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <strong>Temperature:</strong> Current Temperature <br /><br />
+
+                        <strong>Humidity:</strong> Current Humidity <br /><br />
+
+                        <strong>Wind Speed:</strong> Average Wind Speed in Targeted Area <br /><br />
+
+                        <strong>Elevation:</strong> Current Elevation Relative to Sea Level <br /><br />
+
+                        <strong>Vegitation Index</strong> Target Area's NDVI score
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            <br />
             <MudText Typo="Typo.h6" Class="mb-2">Wildfire Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
         </MudItem>
     </MudGrid>
+
+    <MudExpansionPanels>
+        <MudExpansionPanel Text="Feature Definitions">
+            <MudTable Dense="true" Striped="true" T="string">
+                <HeaderContent>
+                    <MudTh>Feature</MudTh>
+                    <MudTh>Definition</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>Temperature</MudTd>
+                    <MudTd>Temperature of the area in Kelvin, Celsius, or Fahrenheit.</MudTd>
+                </RowTemplate>
+                <RowTemplate>
+                    <MudTd>Humidity</MudTd>
+                    <MudTd>Percentage of moisture in the air.</MudTd>
+                </RowTemplate>
+                <RowTemplate>
+                    <MudTd>Wind Speed</MudTd>
+                    <MudTd>Speed of the wind in m/s, km/h, or mph.</MudTd>
+                </RowTemplate>
+                <RowTemplate>
+                    <MudTd>Elevation</MudTd>
+                    <MudTd>Height above sea level in meters or feet.</MudTd>
+                </RowTemplate>
+                <RowTemplate>
+                    <MudTd>Vegetation Index</MudTd>
+                    <MudTd>Normalized Difference Vegetation Index (NDVI).</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 </MudPaper>
 
 @code {

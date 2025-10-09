@@ -93,6 +93,28 @@
         </MudItem>
 
         <MudItem xs="12" sm="6">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Feature Definitions</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <strong>Rainfall:</strong> Rainfall rate in mm/hr or in/hr <br /><br />
+
+                        <strong>Relative Water Level:</strong> Water level relative to river surface as 3000mm <br /><br />
+
+                        <strong>Relative Slope:</strong> Relative slope of the terrain in degrees. <br /><br />
+
+                        <strong>Relative Elevation:</strong> Elevation above river water level in meters or feet. <br /><br />
+
+                        <strong>Distance From River:</strong> Distance from the river in meters or feet.
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            <br />
             <MudText Typo="Typo.h6" Class="mb-2">Fluvial Flood Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
         </MudItem>

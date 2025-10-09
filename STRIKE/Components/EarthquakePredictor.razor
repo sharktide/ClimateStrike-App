@@ -60,6 +60,28 @@
             </MudStack>
         </MudItem>
         <MudItem xs="12" sm="6">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Feature Definitions</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <strong>Seismic Moment Rate (Nm/s):</strong> Total energy release rate from seismic events. <br /><br />
+
+                        <strong>Surface Displacement Rate (mm/yr):</strong> Horizontal/vertical ground motion observed via GPS/InSAR. <br /><br />
+
+                        <strong>Coulomb Stress Change (Pa):</strong> Fault stress changes post-seismic activity. <br /><br />
+
+                        <strong>Average Focal Depth (km):</strong> Typical depth of earthquakes in the region. <br /><br />
+
+                        <strong>Fault Slip Rate (mm/yr):</strong> Long-term fault motion due to tectonic loading.
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            <br />
             <MudText Typo="Typo.h6" Class="mb-2">Earthquake Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
         </MudItem>
