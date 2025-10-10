@@ -79,7 +79,7 @@ jobs:
       - name: Create Installer for aarch64
         uses: nadeemjazmawe/inno-setup-action-cli@v6.0.5
         with:
-          path: ./Setup-arm.iss
+          filepath: ./Setup-arm.iss
 
       - name: Create zip for x64
         run: |
