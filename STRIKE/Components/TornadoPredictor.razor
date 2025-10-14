@@ -55,7 +55,15 @@
                 </MudStack>
             </MudSlider>
             <MudStack Row="false" Spacing="2" Class="mt-4">
-                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use TornadoTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                    <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use TornadoTrustNet" Color="Color.Primary" />
+                    
+                    <MudCheckBox @bind-Value="_useInternet"
+                                T="bool"
+                                Label="Use Internet"
+                                Disabled="_isApplePlatform"
+                                Color="Color.Secondary" />
+                </MudStack>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
             </MudStack>
         </MudItem>
@@ -84,11 +92,53 @@
             <br />
             <MudText Typo="Typo.h6" Class="mb-2">Tornado Formation Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+            @if (_showAlert)
+            {
+                <MudAlert Severity="@_alertSeverity" Elevation="1" Dense="true" Class="mt-2">
+                    @_alertMessage
+                </MudAlert>
+            }
         </MudItem>
     </MudGrid>
 </MudPaper>
 
 @code {
+    private string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
+    private int _spinnerIndex = 0;
+    private Timer? _spinnerTimer;
+    private bool _isPredicting = false;
+
+    private string _alertMessage = "";
+    private Severity _alertSeverity = Severity.Normal;
+    private bool _showAlert = false;
+
+    private void StartSpinner()
+    {
+        _isPredicting = true;
+        _showAlert = false;
+        _predictionResult = $"{_spinnerFrames[_spinnerIndex]} Predicting...";
+        _spinnerTimer = new Timer(_ =>
+        {
+            _spinnerIndex = (_spinnerIndex + 1) % _spinnerFrames.Length;
+            _predictionResult = $"{_spinnerFrames[_spinnerIndex]} Predicting...";
+            InvokeAsync(StateHasChanged);
+        }, null, 0, 100);
+    }
+
+    private void StopSpinner()
+    {
+        _spinnerTimer?.Dispose();
+        _spinnerTimer = null;
+    }
+    private bool _useInternet = true;
+    private bool _isApplePlatform = OperatingSystem.IsIOS() || OperatingSystem.IsMacOS();
+    protected override void OnInitialized()
+    {
+        if (_isApplePlatform)
+        {
+            _useInternet = true;
+        }
+    }
     private float _srh = 280f;
     private float _cape = 3000f;
     private float _lcl = 950f;
@@ -103,17 +153,74 @@
     private string _4 = "4";
     private string _5 = "5";
 
-    private void RunPrediction()
+    private async Task RunPrediction()
     {
-        var input = new float[]
+        StartSpinner();
+        try
         {
-            _srh,
-            _cape,
-            _lcl,
-            _shear,
-            _stp
-        };
+            var input = new float[]
+            {
+                _srh,
+                _cape,
+                _lcl,
+                _shear,
+                _stp
+            };
 
-        _predictionResult = TornadoModelRunner.Predict(input, _useTrust);
+            _predictionResult = await Task.Run(() => TornadoModelRunner.Predict(input, _useTrust, _useInternet));
+            _alertMessage = "Prediction successful.";
+            _alertSeverity = Severity.Success;
+            _showAlert = true;
+        }
+        catch (Exception ex)
+        {
+            _predictionResult = " ";
+            _alertMessage = $"Prediction failed. {ex.Message}";
+            _alertSeverity = Severity.Error;
+            _showAlert = true;
+        }
+        finally
+        {
+            StopSpinner();
+        }
+    }
+    private void ResetPrediction()
+    {
+        _predictionResult = "";
+        _showAlert = false;
+    }
+    private Dictionary<string, object> _lastInputs = new();
+    protected override void OnParametersSet()
+    {
+        CheckForInputChanges();
+    }
+
+    private void CheckForInputChanges()
+    {
+        var currentInputs = new Dictionary<string, object>
+        {
+            { "srh", _srh },
+            { "cape", _cape },
+            { "lcl", _lcl },
+            { "shear", _shear },
+            { "stp", _stp },
+            { "useTrust", _useTrust },
+            { "predictionResult", _predictionResult },
+            { "1", _1 },
+            { "2", _2 },
+            { "3", _3 },
+            { "4", _4 },
+            { "5", _5 }
+        };
+        foreach (var kvp in currentInputs)
+        {
+            if (!_lastInputs.ContainsKey(kvp.Key) || !_lastInputs[kvp.Key].Equals(kvp.Value))
+            {
+                ResetPrediction();
+                break;
+            }
+        }
+
+        _lastInputs = currentInputs;
     }
 }

@@ -89,7 +89,15 @@
             </MudSlider>
 
             <MudStack Row="false" Spacing="2" Class="mt-4">
-                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use FireTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                    <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use FireTrustNet" Color="Color.Primary" />
+                    
+                    <MudCheckBox @bind-Value="_useInternet"
+                                T="bool"
+                                Label="Use Internet"
+                                Disabled="_isApplePlatform"
+                                Color="Color.Secondary" />
+                </MudStack>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
             </MudStack>
         </MudItem>
@@ -119,43 +127,53 @@
             <br />
             <MudText Typo="Typo.h6" Class="mb-2">Wildfire Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+            @if (_showAlert)
+            {
+                <MudAlert Severity="@_alertSeverity" Elevation="1" Dense="true" Class="mt-2">
+                    @_alertMessage
+                </MudAlert>
+            }
         </MudItem>
     </MudGrid>
-
-    <MudExpansionPanels>
-        <MudExpansionPanel Text="Feature Definitions">
-            <MudTable Dense="true" Striped="true" T="string">
-                <HeaderContent>
-                    <MudTh>Feature</MudTh>
-                    <MudTh>Definition</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>Temperature</MudTd>
-                    <MudTd>Temperature of the area in Kelvin, Celsius, or Fahrenheit.</MudTd>
-                </RowTemplate>
-                <RowTemplate>
-                    <MudTd>Humidity</MudTd>
-                    <MudTd>Percentage of moisture in the air.</MudTd>
-                </RowTemplate>
-                <RowTemplate>
-                    <MudTd>Wind Speed</MudTd>
-                    <MudTd>Speed of the wind in m/s, km/h, or mph.</MudTd>
-                </RowTemplate>
-                <RowTemplate>
-                    <MudTd>Elevation</MudTd>
-                    <MudTd>Height above sea level in meters or feet.</MudTd>
-                </RowTemplate>
-                <RowTemplate>
-                    <MudTd>Vegetation Index</MudTd>
-                    <MudTd>Normalized Difference Vegetation Index (NDVI).</MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudExpansionPanel>
-    </MudExpansionPanels>
 </MudPaper>
 
 @code {
-    // Values
+    private string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
+    private int _spinnerIndex = 0;
+    private Timer? _spinnerTimer;
+    private bool _isPredicting = false;
+
+    private string _alertMessage = "";
+    private Severity _alertSeverity = Severity.Normal;
+    private bool _showAlert = false;
+
+    private void StartSpinner()
+    {
+        _isPredicting = true;
+        _showAlert = false;
+        _predictionResult = $"{_spinnerFrames[_spinnerIndex]} Predicting...";
+        _spinnerTimer = new Timer(_ =>
+        {
+            _spinnerIndex = (_spinnerIndex + 1) % _spinnerFrames.Length;
+            _predictionResult = $"{_spinnerFrames[_spinnerIndex]} Predicting...";
+            InvokeAsync(StateHasChanged);
+        }, null, 0, 100);
+    }
+
+    private void StopSpinner()
+    {
+        _spinnerTimer?.Dispose();
+        _spinnerTimer = null;
+    }
+    private bool _useInternet = true;
+    private bool _isApplePlatform = OperatingSystem.IsIOS() || OperatingSystem.IsMacOS();
+    protected override void OnInitialized()
+    {
+        if (_isApplePlatform)
+        {
+            _useInternet = true;
+        }
+    }
     private float _temperature = 310f;
     private float _humidity = 10f;
     private float _windSpeed = 6f;
@@ -169,12 +187,10 @@
     private string _vegUnit = "NDVI";
 
     private string _predictionResult = "";
-
-    // Dynamic Ranges
     private float TemperatureMin => _temperatureUnit switch {
-        "C" => -50f, // realistic range for C
+        "C" => -50f,
         "F" => -58f,
-        _ => 223f // K
+        _ => 223f
     };
 
     private float TemperatureMax => _temperatureUnit switch {
@@ -205,19 +221,35 @@
         _ => 3000f
     };
 
-    // Run model prediction
-    private void RunPrediction()
+    private async Task RunPrediction()
     {
-        var input = new float[]
-        {
-            ConvertTemperature(_temperature, _temperatureUnit),
-            _humidity,
-            ConvertWindSpeed(_windSpeed, _windSpeedUnit),
-            _vegetationIndex,
-            ConvertElevation(_elevation, _elevationUnit)
-        };
+        StartSpinner();
+        try {   
+            var input = new float[]
+            {
+                ConvertTemperature(_temperature, _temperatureUnit),
+                _humidity,
+                ConvertWindSpeed(_windSpeed, _windSpeedUnit),
+                _vegetationIndex,
+                ConvertElevation(_elevation, _elevationUnit)
+            };
 
-        _predictionResult = WildfireModelRunner.Predict(input, _useTrust);
+            _predictionResult = await Task.Run(() => WildfireModelRunner.Predict(input, _useTrust, _useInternet));
+            _alertMessage = "Prediction successful.";
+            _alertSeverity = Severity.Success;
+            _showAlert = true;
+        }
+        catch(Exception ex)
+        {
+            _predictionResult = " ";
+            _alertMessage = $"Prediction failed. {ex}";
+            _alertSeverity = Severity.Error;
+            _showAlert = true;
+        }
+        finally
+        {
+            StopSpinner();
+        }
     }
 
     private float ConvertTemperature(float value, string unit) =>
@@ -242,4 +274,44 @@
             "ft" => value * 0.3048f,
             _ => value
         };
+
+    private void ResetPrediction()
+    {
+        _predictionResult = "";
+        _showAlert = false;
+    }
+    private Dictionary<string, object> _lastInputs = new();
+    protected override void OnParametersSet()
+    {
+        CheckForInputChanges();
+    }
+
+    private void CheckForInputChanges()
+    {
+        var currentInputs = new Dictionary<string, object>
+        {
+            { "temperature", _temperature },
+            { "humidity", _humidity },
+            { "windSpeed", _windSpeed },
+            { "elevation", _elevation },
+            { "vegetationIndex", _vegetationIndex },
+            { "useTrust", _useTrust },
+            { "temperatureUnit", _temperatureUnit },
+            { "windSpeedUnit", _windSpeedUnit },
+            { "elevationUnit", _elevationUnit },
+            { "humidityUnit", _humidityUnit },
+            { "vegUnit", _vegUnit }
+        };
+
+        foreach (var kvp in currentInputs)
+        {
+            if (!_lastInputs.ContainsKey(kvp.Key) || !_lastInputs[kvp.Key].Equals(kvp.Value))
+            {
+                ResetPrediction();
+                break;
+            }
+        }
+
+        _lastInputs = currentInputs;
+    }
 }

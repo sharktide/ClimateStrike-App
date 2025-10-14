@@ -31,17 +31,25 @@ public static class FlashFloodModelRunner
         };
     }
 
-    static FlashFloodModelRunner()
-    {
-        var scaler = ScalerLoader.Load("Models/scalers/FlashFloodScaler.txt");
+    private static bool _initialized = false;
 
-        InferenceRunner.Initialize("Models/FlashFloodNet.onnx", "Models/FlashFloodTrustNet.onnx", scaler);
-    }
-
-    public static string Predict(float[] inputFeatures, bool useTrust)
+    public static string Predict(float[] inputFeatures, bool useTrust, bool net)
     {
+        if (net)
+        {
+            InferenceRunner.UseRemoteInference("Flash-Flood");
+        }
+        else if (!_initialized)
+        {
+            InferenceRunner.UseLocalInference();
+            var scaler = ScalerLoader.Load("Models/scalers/FlashFloodScaler.txt");
+            InferenceRunner.Initialize("Models/FlashFloodNet.onnx", "Models/FlashFloodTrustNet.onnx", scaler);
+            _initialized = true;
+        }
+
         var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
+
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
         string label = Eval.GetLabel(adjustedProb);
         SysIO.SavePrediction("🌩️ Flash Flood", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);

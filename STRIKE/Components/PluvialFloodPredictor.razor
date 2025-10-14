@@ -84,7 +84,15 @@
             </MudSlider>
 
             <MudStack Row="false" Spacing="2" Class="mt-4">
-                <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use PV-FloodTrustNet" Class="mt-2" Color="Color.Primary" />
+                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                    <MudCheckBox @bind-Value="_useTrust" T="bool" Label="Use Pv-FloodTrustNet" Color="Color.Primary" />
+                    
+                    <MudCheckBox @bind-Value="_useInternet"
+                                T="bool"
+                                Label="Use Internet"
+                                Disabled="_isApplePlatform"
+                                Color="Color.Secondary" />
+                </MudStack>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunPrediction" Class="mt-4">Predict</MudButton>
             </MudStack>
         </MudItem>
@@ -114,12 +122,53 @@
             <br />
             <MudText Typo="Typo.h6" Class="mb-2">Pluvial flood Risk Verdict</MudText>
             <MudTextField T="string" Value="@_predictionResult" ReadOnly="true" FullWidth="true" />
+            @if (_showAlert)
+            {
+                <MudAlert Severity="@_alertSeverity" Elevation="1" Dense="true" Class="mt-2">
+                    @_alertMessage
+                </MudAlert>
+            }
         </MudItem>
     </MudGrid>
 </MudPaper>
 
 @code {
-    // Values
+    private string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
+    private int _spinnerIndex = 0;
+    private Timer? _spinnerTimer;
+    private bool _isPredicting = false;
+
+    private string _alertMessage = "";
+    private Severity _alertSeverity = Severity.Normal;
+    private bool _showAlert = false;
+
+    private void StartSpinner()
+    {
+        _isPredicting = true;
+        _showAlert = false;
+        _predictionResult = $"{_spinnerFrames[_spinnerIndex]} Predicting...";
+        _spinnerTimer = new Timer(_ =>
+        {
+            _spinnerIndex = (_spinnerIndex + 1) % _spinnerFrames.Length;
+            _predictionResult = $"{_spinnerFrames[_spinnerIndex]} Predicting...";
+            InvokeAsync(StateHasChanged);
+        }, null, 0, 100);
+    }
+
+    private void StopSpinner()
+    {
+        _spinnerTimer?.Dispose();
+        _spinnerTimer = null;
+    }
+    private bool _useInternet = true;
+    private bool _isApplePlatform = OperatingSystem.IsIOS() || OperatingSystem.IsMacOS();
+    protected override void OnInitialized()
+    {
+        if (_isApplePlatform)
+        {
+            _useInternet = true;
+        }
+    }
     private float _rainfall = 20;
     private float _imp = 0.5f;
     private float _ui = 0.6f;
@@ -139,18 +188,38 @@
         _ => 15f
     };
 
-    private void RunPrediction()
+    private async Task RunPrediction()
     {
-        var input = new float[]
-        {
-            _ConvertRainfall(_rainfall, _rainfallUnit),
-            _imp,
-            _dd,
-            _ui,
-            _ci
-        };
+        StartSpinner();
 
-        _predictionResult = PVFloodModelRunner.Predict(input, _useTrust);
+        try
+        {
+            var input = new float[]
+            {
+                _ConvertRainfall(_rainfall, _rainfallUnit),
+                _imp,
+                _dd,
+                _ui,
+                _ci
+            };
+
+            _predictionResult = await Task.Run(() => PVFloodModelRunner.Predict(input, _useTrust, _useInternet));
+
+            _alertMessage = "Prediction successful.";
+            _alertSeverity = Severity.Success;
+            _showAlert = true;
+        }
+        catch (Exception ex)
+        {
+            _predictionResult = " ";
+            _alertMessage = $"Prediction failed. {ex.Message}";
+            _alertSeverity = Severity.Error;
+            _showAlert = true;
+        }
+        finally
+        {
+            StopSpinner();
+        }
     }
 
     private float _ConvertRainfall(float value, string unit) =>
@@ -159,4 +228,41 @@
             "mm" => value,
             _ => (value * 25.4f)
         };
+    private void ResetPrediction()
+    {
+        _predictionResult = "";
+        _showAlert = false;
+    }
+    private Dictionary<string, object> _lastInputs = new();
+    protected override void OnParametersSet()
+    {
+        CheckForInputChanges();
+    }
+
+    private void CheckForInputChanges()
+    {
+        var currentInputs = new Dictionary<string, object>
+        {
+            { "rainfall", _rainfall },
+            { "imp", _imp },
+            { "ui", _ui },
+            { "dd", _dd },
+            { "ci", _ci },
+            { "rainfallUnit", _rainfallUnit },
+            { "impUnit", _impUnit },
+            { "uiUnit", _uiUnit },
+            { "ddUnit", _ddUnit },
+            { "ciUnit", _ciUnit }
+        };
+        foreach (var kvp in currentInputs)
+        {
+            if (!_lastInputs.ContainsKey(kvp.Key) || !_lastInputs[kvp.Key].Equals(kvp.Value))
+            {
+                ResetPrediction();
+                break;
+            }
+        }
+
+        _lastInputs = currentInputs;
+    }
 }

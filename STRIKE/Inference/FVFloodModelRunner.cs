@@ -31,19 +31,26 @@ public static class FVFloodModelRunner
         };
     }
 
-    static FVFloodModelRunner()
-    {
-        var scaler = ScalerLoader.Load("Models/scalers/FV-FloodScaler.txt");
+    private static bool _initialized = false;
 
-        InferenceRunner.Initialize("Models/FV-FloodNet.onnx", "Models/FV-FloodTrustNet.onnx", scaler);
-    }
-
-    public static string Predict(float[] inputFeatures, bool useTrust)
+    public static string Predict(float[] inputFeatures, bool useTrust, bool net)
     {
+        if (net)
+        {
+            InferenceRunner.UseRemoteInference("FV-Flood");
+        }
+        else if (!_initialized)
+        {
+            InferenceRunner.UseLocalInference();
+            var scaler = ScalerLoader.Load("Models/scalers/FV-FloodScaler.txt");
+            InferenceRunner.Initialize("Models/FV-FloodNet.onnx", "Models/FV-FloodTrustNet.onnx", scaler);
+            _initialized = true;
+        }
+
         var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        string label =  Eval.GetLabel(adjustedProb);
+        string label = Eval.GetLabel(adjustedProb);
         SysIO.SavePrediction("🏞️ Fluvial Flood", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
         return label;
     }

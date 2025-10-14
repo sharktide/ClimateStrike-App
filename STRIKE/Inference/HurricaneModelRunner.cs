@@ -30,20 +30,26 @@ public static class HurricaneModelRunner
             _      => $"⚠️ Hurricane Possible | {prob:F4}"
         };
     }
+    private static bool _initialized = false;
 
-    static HurricaneModelRunner()
+    public static string Predict(float[] inputFeatures, bool useTrust, bool net)
     {
-        var scaler = ScalerLoader.Load("Models/scalers/HurricaneScaler.txt");
+        if (net)
+        {
+            InferenceRunner.UseRemoteInference("Hurricane");
+        }
+        else if (!_initialized)
+        {
+            InferenceRunner.UseLocalInference();
+            var scaler = ScalerLoader.Load("Models/scalers/HurricaneScaler.txt");
+            InferenceRunner.Initialize("Models/HurricaneNet.onnx", "Models/HurricaneTrustNet.onnx", scaler);
+            _initialized = true;
+        }
 
-        InferenceRunner.Initialize("Models/HurricaneNet.onnx", "Models/HurricaneTrustNet.onnx", scaler);
-    }
-
-    public static string Predict(float[] inputFeatures, bool useTrust)
-    {
         var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        string label =  Eval.GetLabel(adjustedProb);
+        string label = Eval.GetLabel(adjustedProb);
         SysIO.SavePrediction("🌀 Hurricane", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
         return label;
     }

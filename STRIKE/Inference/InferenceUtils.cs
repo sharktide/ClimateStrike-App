@@ -21,6 +21,11 @@ using System.Text.Json;
 using System.IO;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Controls;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 
 public static class ScalerLoader
 {
@@ -39,8 +44,12 @@ public static class ScalerLoader
     }
 }
 
-public static class InferenceRunner
+public static partial class InferenceRunner
 {
+    public static bool _useRemoteInference = false;
+    private static string _remoteEndpoint = "https://sharktide-strike.hf.space/api/predict/";
+    private static string _currentModel = "Wildfire";
+
     private static InferenceSession? _baseSession;
     private static InferenceSession? _trustSession;
     private static StandardScaler? _scaler;
@@ -68,8 +77,64 @@ public static class InferenceRunner
         }
     }
 
-    public static float RunPrediction(float[] inputFeatures, bool useTrust)
+    public static void UseRemoteInference(string modelName)
     {
+        _useRemoteInference = true;
+        _currentModel = modelName;
+    }
+    public static void UseLocalInference()
+    {
+        _useRemoteInference = false;
+    }
+
+    public static float RunPrediction(float[] inputFeatures, bool useTrust, string extras = "", bool isWildfire = false)
+    {
+        if (_useRemoteInference)
+        {
+            try
+            {
+                string query;
+                using var client = new HttpClient();
+                if (isWildfire)
+                {
+                    query = $"{_remoteEndpoint}{_currentModel}?" +
+                            $"param1={inputFeatures[0]}&param2={inputFeatures[1]}&param3={inputFeatures[2]}" +
+                            $"&param4={inputFeatures[4]}&param5={inputFeatures[3]}&use_trust={useTrust.ToString().ToLower()}{extras}";
+                }
+                else
+                {
+                    query = $"{_remoteEndpoint}{_currentModel}?" +
+                            $"param1={inputFeatures[0]}&param2={inputFeatures[1]}&param3={inputFeatures[2]}" +
+                            $"&param4={inputFeatures[3]}&param5={inputFeatures[4]}&use_trust={useTrust.ToString().ToLower()}{extras}";
+                }
+
+                var response = client.GetAsync(query).Result;
+                response.EnsureSuccessStatusCode();
+
+                var json = response.Content.ReadFromJsonAsync<RemoteResponse>().Result;
+
+                if (json?.Result is string resultText)
+                {
+                    var match = MyRegex().Match(resultText);
+                    if (match.Success && float.TryParse(match.Groups[1].Value, out float parsedProb))
+                    {
+                        return parsedProb;
+                    }
+                    else
+                    {
+                        throw new JsonException("Unable to parse probability from response");
+                    }
+                }
+
+                throw new InvalidOperationException("Remote response was null or malformed.");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Remote inference failed", ex);
+            }
+
+        }
+        
         var baseTensor = new DenseTensor<float>(inputFeatures, new[] { 1, inputFeatures.Length });
         var inputName = _baseSession!.InputMetadata.Keys.First();
 
@@ -97,6 +162,12 @@ public static class InferenceRunner
 
         return adjustedProb;
     }
+
+    private class RemoteResponse
+    {
+        public required string Result { get; set; }
+    }
+
 
     public static string RenameLabel(string label)
     {
@@ -164,8 +235,17 @@ public static class InferenceRunner
         { "Vegetation Index", "NDVI" },
     };
 
+    [System.Text.RegularExpressions.GeneratedRegex(@"\(([\d.]+)\)")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
 }
 
+public static class NetHelper
+{
+    public static bool IsConnected()
+    {
+        return Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
+    }
+} 
 public class StandardScaler
 {
     [JsonConstructor]

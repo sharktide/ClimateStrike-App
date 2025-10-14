@@ -27,23 +27,30 @@ public static class WildfireModelRunner
         {
             > 0.49f => $"🔥 FIRE LIKELY | {prob:F4}",
             < 0.44f => $"🛡️ Fire Unlikely | {prob:F4}",
-            _      => $"⚠️ Fire Possible | {prob:F4}"
+            _ => $"⚠️ Fire Possible | {prob:F4}"
         };
     }
 
-    static WildfireModelRunner()
-    {
-        var scaler = ScalerLoader.Load("Models/scalers/FireScaler.txt");
+    private static bool _initialized = false;
 
-        InferenceRunner.Initialize("Models/FireNet.onnx", "Models/FireTrustNet.onnx", scaler);
-    }
-
-    public static string Predict(float[] inputFeatures, bool useTrust)
+    public static string Predict(float[] inputFeatures, bool useTrust, bool net)
     {
+        if (net)
+        {
+            InferenceRunner.UseRemoteInference("Wildfire");
+        }
+        else if (!_initialized)
+        {
+            InferenceRunner.UseLocalInference();
+            var scaler = ScalerLoader.Load("Models/scalers/FireScaler.txt");
+            InferenceRunner.Initialize("Models/FireNet.onnx", "Models/FireTrustNet.onnx", scaler);
+            _initialized = true;
+        }
+
         var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
-        var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        string label =  Eval.GetLabel(adjustedProb);
+        var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust, "", true);
+        string label = Eval.GetLabel(adjustedProb);
         SysIO.SavePrediction("🔥 Wildfire", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
         return label;
     }

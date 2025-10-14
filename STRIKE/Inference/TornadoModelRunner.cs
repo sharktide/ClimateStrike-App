@@ -14,13 +14,15 @@ limitations under the License. */
 
 namespace STRIKE.Inference;
 using STRIKE.InferenceUtils;
+using Microsoft.Maui.Networking;
 
 public static class TornadoModelRunner
 {
     public static string[] GetNames()
     {
-        return ["Storm Relative Helicity", "CAPE", "Lifted Condensation Level", "Bulk Wind Shear", "Significant Tornado Parameter"];
+        return ["Storm Relative Helicity (SRH)", "CAPE", "Lifted Condensation Level (LCL)", "Bulk Wind Shear", "Significant Tornado Parameter (STP)"];
     }
+
     private static class Eval
     {
         public static string GetLabel(float prob) => prob switch
@@ -31,19 +33,27 @@ public static class TornadoModelRunner
         };
     }
 
-    static TornadoModelRunner()
-    {
-        var scaler = ScalerLoader.Load("Models/scalers/TornadoScaler.txt");
+    private static bool _initialized = false;
 
-        InferenceRunner.Initialize("Models/TornadoNet.onnx", "Models/TornadoTrustNet.onnx", scaler);
-    }
-
-    public static string Predict(float[] inputFeatures, bool useTrust)
+    public static string Predict(float[] inputFeatures, bool useTrust, bool net)
     {
+        if (net)
+        {
+            InferenceRunner.UseRemoteInference("Tornado");
+        }
+        else if (!_initialized)
+        {
+            InferenceRunner.UseLocalInference();
+            var scaler = ScalerLoader.Load("Models/scalers/TornadoScaler.txt");
+            InferenceRunner.Initialize("Models/TornadoNet.onnx", "Models/TornadoTrustNet.onnx", scaler);
+            _initialized = true;
+        }
+
         var inputDict = GetNames().Zip(inputFeatures, (name, value) => new KeyValuePair<string, float>(name, value))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
+
         var adjustedProb = InferenceRunner.RunPrediction(inputFeatures, useTrust);
-        string label =  Eval.GetLabel(adjustedProb);
+        string label = Eval.GetLabel(adjustedProb);
         SysIO.SavePrediction("🌪️ Tornado", InferenceRunner.RenameLabel(label), adjustedProb, useTrust, inputDict);
         return label;
     }
