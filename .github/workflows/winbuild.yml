@@ -35,7 +35,7 @@ jobs:
           dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true -f net9.0-windows10.0.19041.0
     
       - name: Create Installer for x64
-        uses: nadeemjazmawe/inno-setup-action-cli@v6.0.5
+        uses: sharktide/iscc-cli@1.0.0
         with:
           filepath: ./Setup-amd64.iss
 
@@ -77,7 +77,7 @@ jobs:
           dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true -f net9.0-windows10.0.19041.0
     
       - name: Create Installer for aarch64
-        uses: nadeemjazmawe/inno-setup-action-cli@v6.0.5
+        uses: sharktide/iscc-cli@1.0.0
         with:
           filepath: ./Setup-arm.iss
 
