@@ -35,9 +35,9 @@ jobs:
           dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true -f net9.0-windows10.0.19041.0
     
       - name: Create Installer for x64
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        uses: sharktide/iscc-cli@1.0.0
         with:
-          path: Setup-amd64.iss
+          filepath: ./Setup-amd64.iss
 
       - name: Create zip for x64
         run: |
@@ -77,9 +77,9 @@ jobs:
           dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.CONFIGURATION }} --self-contained true -f net9.0-windows10.0.19041.0
     
       - name: Create Installer for aarch64
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        uses: sharktide/iscc-cli@1.0.0
         with:
-          path: Setup-arm.iss
+          filepath: ./Setup-arm.iss
 
       - name: Create zip for x64
         run: |
