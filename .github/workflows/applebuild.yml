@@ -2,6 +2,15 @@ name: Build For Apple Platforms
 
 on:
   workflow_dispatch:
+      inputs:
+        target:
+          description: 'Choose platform to build'
+          required: true
+          default: 'ios'
+          type: choice
+          options:
+            - ios
+            - macc
 
 jobs:
   build-macc:
