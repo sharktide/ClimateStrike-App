@@ -14,6 +14,7 @@ on:
 
 jobs:
   build-macc:
+    if: ${{ github.event.inputs.target == 'macc' }}
     runs-on: macos-15
 
     steps:
@@ -42,6 +43,7 @@ jobs:
           name: StrikeAI-PKG
           path: STRIKE/bin/Release/net9.0-maccatalyst/publish/**
   build-ios:
+    if: ${{ github.event.inputs.target == 'ios' }}
     runs-on: macos-15
 
     steps:
