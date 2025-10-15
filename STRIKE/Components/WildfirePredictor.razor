@@ -280,38 +280,4 @@
         _predictionResult = "";
         _showAlert = false;
     }
-    private Dictionary<string, object> _lastInputs = new();
-    protected override void OnParametersSet()
-    {
-        CheckForInputChanges();
-    }
-
-    private void CheckForInputChanges()
-    {
-        var currentInputs = new Dictionary<string, object>
-        {
-            { "temperature", _temperature },
-            { "humidity", _humidity },
-            { "windSpeed", _windSpeed },
-            { "elevation", _elevation },
-            { "vegetationIndex", _vegetationIndex },
-            { "useTrust", _useTrust },
-            { "temperatureUnit", _temperatureUnit },
-            { "windSpeedUnit", _windSpeedUnit },
-            { "elevationUnit", _elevationUnit },
-            { "humidityUnit", _humidityUnit },
-            { "vegUnit", _vegUnit }
-        };
-
-        foreach (var kvp in currentInputs)
-        {
-            if (!_lastInputs.ContainsKey(kvp.Key) || !_lastInputs[kvp.Key].Equals(kvp.Value))
-            {
-                ResetPrediction();
-                break;
-            }
-        }
-
-        _lastInputs = currentInputs;
-    }
 }

@@ -258,37 +258,4 @@
         _predictionResult = "";
         _showAlert = false;
     }
-    private Dictionary<string, object> _lastInputs = new();
-    protected override void OnParametersSet()
-    {
-        CheckForInputChanges();
-    }
-
-    private void CheckForInputChanges()
-    {
-        var currentInputs = new Dictionary<string, object>
-        {
-            { "rainfall", _rainfall },
-            { "rwl", _rwl },
-            { "elevation", _elevation },
-            { "slope", _slope },
-            { "dist", _dist },
-            { "useTrust", _useTrust },
-            { "rainfallUnit", _rainfallUnit },
-            { "rwlUnit", _rwlUnit },
-            { "elevationUnit", _elevationUnit },
-            { "slopeUnit", _slopeUnit },
-            { "distUnit", _distUnit }
-        };
-        foreach (var kvp in currentInputs)
-        {
-            if (!_lastInputs.ContainsKey(kvp.Key) || !_lastInputs[kvp.Key].Equals(kvp.Value))
-            {
-                ResetPrediction();
-                break;
-            }
-        }
-
-        _lastInputs = currentInputs;
-    }
 }
