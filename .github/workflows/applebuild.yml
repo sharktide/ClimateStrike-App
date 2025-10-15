@@ -6,7 +6,7 @@ on:
         target:
           description: 'Choose platform to build'
           required: true
-          default: 'ios'
+          default: 'macc'
           type: choice
           options:
             - ios
@@ -15,7 +15,7 @@ on:
 jobs:
   build-macc:
     if: ${{ github.event.inputs.target == 'macc' }}
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
       - name: Setup XCode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15'
+          xcode-version: '26'
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
