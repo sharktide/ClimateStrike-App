@@ -36,10 +36,43 @@ public static class ScalerLoader
     };
     public static StandardScaler Load(string relativePath)
     {
-        var fullPath = Path.Combine(AppContext.BaseDirectory, relativePath);
-        var json = File.ReadAllText(fullPath);
+        string? json = null;
 
-        return JsonSerializer.Deserialize<StandardScaler>(json, CachedJsonOptions)
+        try
+        {
+            var fullPath = Path.Combine(AppContext.BaseDirectory, relativePath);
+            if (File.Exists(fullPath))
+            {
+                json = File.ReadAllText(fullPath);
+            }
+        }
+        catch { }
+
+        if (json == null)
+        {
+            try
+            {
+                var fileName = Path.GetFileName(relativePath);
+                using var stream = Microsoft.Maui.Storage.FileSystem.OpenAppPackageFileAsync(fileName).GetAwaiter().GetResult();
+                using var reader = new StreamReader(stream);
+                json = reader.ReadToEnd();
+            }
+            catch
+            {
+                try
+                {
+                    using var stream = Microsoft.Maui.Storage.FileSystem.OpenAppPackageFileAsync(relativePath).GetAwaiter().GetResult();
+                    using var reader = new StreamReader(stream);
+                    json = reader.ReadToEnd();
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to load scaler from '{relativePath}' (file system and app package attempts failed)", ex);
+                }
+            }
+        }
+
+        return JsonSerializer.Deserialize<StandardScaler>(json!, CachedJsonOptions)
                ?? throw new InvalidOperationException("Failed to load scaler.");
     }
 }
