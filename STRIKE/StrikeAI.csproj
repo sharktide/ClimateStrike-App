@@ -42,7 +42,8 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
         <DefaultLanguage>en-us</DefaultLanguage>
         <TargetPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</TargetPlatformVersion>
-
+		<MtouchLink>SdkOnly</MtouchLink>
+		<UseInterpreter>True</UseInterpreter> 
 
     </PropertyGroup>
 
