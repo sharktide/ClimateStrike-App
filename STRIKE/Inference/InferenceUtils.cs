@@ -21,6 +21,7 @@ using System.Text.Json;
 using System.IO;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -86,6 +87,8 @@ public static partial class InferenceRunner
     private static InferenceSession? _baseSession;
     private static InferenceSession? _trustSession;
     private static StandardScaler? _scaler;
+    private static string? _baseModelPath;
+    private static string? _trustModelPath;
 
     public static void Initialize(string baseModelFileName, string trustModelFileName, StandardScaler scaler)
     {
@@ -93,11 +96,16 @@ public static partial class InferenceRunner
         {
             _scaler = scaler;
 
-            var baseModelPath = Path.Combine(AppContext.BaseDirectory, baseModelFileName);
-            var trustModelPath = Path.Combine(AppContext.BaseDirectory, trustModelFileName);
+            _baseModelPath = Path.Combine(AppContext.BaseDirectory, baseModelFileName);
+            _trustModelPath = Path.Combine(AppContext.BaseDirectory, trustModelFileName);
 
-            _baseSession = new InferenceSession(baseModelPath);
-            _trustSession = new InferenceSession(trustModelPath);
+            var platform = DeviceInfo.Platform;
+            if (!_useRemoteInference && platform != DevicePlatform.MacCatalyst && platform != DevicePlatform.iOS)
+            {
+                _baseSession = new InferenceSession(_baseModelPath);
+            }
+
+                _trustSession = new InferenceSession(_trustModelPath);
         }
         catch (Exception ex)
         {
@@ -107,6 +115,28 @@ public static partial class InferenceRunner
                 current = current.InnerException;
                 var rootCause = $"Type: {current.GetType().Name} Message: {current.Message} Trace: {current.StackTrace}";
             }
+        }
+    }
+
+    private static bool TryInitializeBaseSessionIfAllowed()
+    {
+        try
+        {
+            if (_baseSession != null) return true;
+
+            if (_useRemoteInference) return false;
+
+            var platform = DeviceInfo.Platform;
+            if (platform == DevicePlatform.MacCatalyst || platform == DevicePlatform.iOS) return false;
+
+            if (string.IsNullOrEmpty(_baseModelPath)) return false;
+
+            _baseSession = new InferenceSession(_baseModelPath);
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -124,6 +154,18 @@ public static partial class InferenceRunner
     {
         if (_useRemoteInference)
         {
+            if (!NetHelper.IsConnected())
+            {
+                // Try to lazily initialize the base session if the app was allowed to load it
+                var initialized = TryInitializeBaseSessionIfAllowed();
+                if (initialized)
+                {
+                    goto LocalInference;
+                }
+
+                throw new InvalidOperationException("Remote inference requested but no network connectivity and local models are not initialized or not allowed on this platform.");
+            }
+
             try
             {
                 string query;
@@ -141,10 +183,10 @@ public static partial class InferenceRunner
                             $"&param4={inputFeatures[3]}&param5={inputFeatures[4]}&use_trust={useTrust.ToString().ToLower()}{extras}";
                 }
 
-                var response = client.GetAsync(query).Result;
+                var response = client.GetAsync(query).GetAwaiter().GetResult();
                 response.EnsureSuccessStatusCode();
 
-                var json = response.Content.ReadFromJsonAsync<RemoteResponse>().Result;
+                var json = response.Content.ReadFromJsonAsync<RemoteResponse>().GetAwaiter().GetResult();
 
                 if (json?.Result is string resultText)
                 {
@@ -155,7 +197,7 @@ public static partial class InferenceRunner
                     }
                     else
                     {
-                        throw new JsonException("Unable to parse probability from response");
+                        throw new JsonException("Unable to parse probability from remote response");
                     }
                 }
 
@@ -163,13 +205,30 @@ public static partial class InferenceRunner
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Remote inference failed", ex);
-            }
+                // If remote fails, but local models exist, fall back to local inference rather than throwing.
+                // If remote fails, attempt to lazily create base session if allowed and fall back
+                var initialized = TryInitializeBaseSessionIfAllowed();
+                if (initialized)
+                {
+                    try
+                    {
+                        goto LocalInference;
+                    }
+                    catch { /* fall through to error below if local also fails */ }
+                }
 
+                throw new InvalidOperationException("Remote inference failed and no local fallback available.", ex);
+            }
         }
         
+        LocalInference:
+        if (_baseSession == null)
+        {
+            throw new InvalidOperationException("Local model session is not initialized. Call Initialize(...) before running local inference or enable remote inference when network is available.");
+        }
+
         var baseTensor = new DenseTensor<float>(inputFeatures, new[] { 1, inputFeatures.Length });
-        var inputName = _baseSession!.InputMetadata.Keys.First();
+        var inputName = _baseSession.InputMetadata.Keys.First();
 
         var baseResults = _baseSession.Run(new[] {
             NamedOnnxValue.CreateFromTensor(inputName, baseTensor)
