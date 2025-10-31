@@ -23,6 +23,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright (c) 2025, Rihaan Meher</string>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>CFBundleDisplayName</key>
