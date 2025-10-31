@@ -35,7 +35,7 @@ jobs:
         run: dotnet workload install maui
 
       - name: Build MacOS App Package
-        run: dotnet publish -v d STRIKE/StrikeAI.csproj -f net9.0-maccatalyst -c Release -p:ArchiveOnBuild=true -p:EnableCodeSigning=false
+        run: dotnet publish -v d STRIKE/StrikeAI.csproj -f net9.0-maccatalyst -c Release -p:ArchiveOnBuild=true -p:EnableCodeSigning=true-p:EnableCodeSigning=true -p:EnablePackageSigning=true -p:CodesignKey="Developer ID Application:\ Navita Meher (5WY7FLX467)" -p:CodesignProvision="ClimateStrike AI (Non App Store)" -p:CodesignEntitlements="Platforms\MacCatalyst\Entitlements.plist" -p:PackageSigningKey="Developer ID Installer:\ Navita Meher (5WY7FLX467)"
 
       - name: Upload PKG Artifact
         uses: actions/upload-artifact@v4
