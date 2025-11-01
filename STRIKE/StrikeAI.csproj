@@ -25,7 +25,7 @@
         <ApplicationTitle>Strike AI</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.sharktide.strike</ApplicationId>
+        <ApplicationId>com.companyname.strike</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
