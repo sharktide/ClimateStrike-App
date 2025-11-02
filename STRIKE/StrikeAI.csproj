@@ -51,7 +51,10 @@
         <NoWarn>$(NoWarn);MUD0002</NoWarn>
     </PropertyGroup>
 
-
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst'">
+		<UseHardenedRuntime>true</UseHardenedRuntime>
+		<MtouchLink>None</MtouchLink>
+	</PropertyGroup>
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
