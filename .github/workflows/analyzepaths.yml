@@ -1,0 +1,28 @@
+name: Analyze Paths for Linker
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  generate-descriptors:
+    runs-on: macos-latest
+    if: "!contains(github.event.head_commit.message, 'noanalyze')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dotnet-trim
+        run: dotnet tool install -g dotnet-trim
+
+      - name: Generate ILLink.Descriptors.xml
+        run: |
+          dotnet trim --analyze --output-linker-descriptors ILLink.Descriptors.xml \
+            --project STRIKE/StrikeAI.csproj \
+            --configuration Release \
+            --runtime maccatalyst
+
+      - name: Upload descriptors
+        uses: actions/upload-artifact@v3
+        with:
+          name: ILLink.Descriptors.xml
+          path: ILLink.Descriptors.xml
