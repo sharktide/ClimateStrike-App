@@ -22,7 +22,7 @@ jobs:
             --runtime maccatalyst
 
       - name: Upload descriptors
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ILLink.Descriptors.xml
           path: ILLink.Descriptors.xml
