@@ -52,6 +52,7 @@
     </PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-maccatalyst'">
+		<PublishTrimmed>False</PublishTrimmed> <!-- or True if you're ready to annotate -->
 		<UseHardenedRuntime>true</UseHardenedRuntime>
 		<MtouchLink>None</MtouchLink>
 		<PublishAot>True</PublishAot>
