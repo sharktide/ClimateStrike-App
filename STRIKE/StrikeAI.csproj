@@ -52,10 +52,13 @@
     </PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-maccatalyst'">
+		<PublishTrimmed>true</PublishTrimmed>
+		<PublishAot>true</PublishAot>
+		<UseInterpreter>false</UseInterpreter>
 		<UseHardenedRuntime>true</UseHardenedRuntime>
-		<MtouchLink>None</MtouchLink>
-		<PublishAot>True</PublishAot>
-		<UseInterpreter>False</UseInterpreter> 
+		<TrimmerRootAssembly>STRIKE</TrimmerRootAssembly>
+		<TrimmerDefaultAction>link</TrimmerDefaultAction>
+		<IsTrimmable>true</IsTrimmable>
 	</PropertyGroup>
     <ItemGroup>
         <!-- App Icon -->
