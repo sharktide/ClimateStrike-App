@@ -51,9 +51,11 @@
         <NoWarn>$(NoWarn);MUD0002</NoWarn>
     </PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst'">
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-maccatalyst'">
 		<UseHardenedRuntime>true</UseHardenedRuntime>
 		<MtouchLink>None</MtouchLink>
+		<PublishAot>True</PublishAot>
+		<UseInterpreter>False</UseInterpreter> 
 	</PropertyGroup>
     <ItemGroup>
         <!-- App Icon -->
