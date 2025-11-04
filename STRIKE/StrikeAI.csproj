@@ -22,7 +22,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>Strike AI</ApplicationTitle>
+        <ApplicationTitle>ClimateStrike AI</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.strike</ApplicationId>
@@ -44,7 +44,7 @@
         <TargetPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</TargetPlatformVersion>
 		<MtouchLink>SdkOnly</MtouchLink>
 		<UseInterpreter>True</UseInterpreter> 
-
+        <TrimmerOutputLinkerDescriptors>true</TrimmerOutputLinkerDescriptors>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -60,6 +60,9 @@
 		<TrimmerDefaultAction>link</TrimmerDefaultAction>
 		<IsTrimmable>true</IsTrimmable>
 	</PropertyGroup>
+    <PropertyGroup Condition="'$(TargetFramework)' == 'Windows'">
+        <UseMonoRuntime>false</UseMonoRuntime>
+    </PropertyGroup>
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
