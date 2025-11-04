@@ -59,7 +59,7 @@ jobs:
 
       - name: Build Mac Catalyst App
         run: |
-          dotnet publish -v d STRIKE/StrikeAI.csproj \
+          dotnet publish -v n STRIKE/StrikeAI.csproj \
             -f net10.0-maccatalyst -c Release \
             -p:ArchiveOnBuild=true \
             -p:EnableCodeSigning=true \
