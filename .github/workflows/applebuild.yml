@@ -57,6 +57,10 @@ jobs:
           security list-keychains -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
   
+      - name: Remove old builds
+        run: |
+          rm -rf obj/ bin/
+  
       - name: Build Mac Catalyst App
         run: |
           dotnet publish -v d STRIKE/StrikeAI.csproj \
