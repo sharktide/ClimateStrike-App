@@ -29,7 +29,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10'
   
       - name: Install MAUI workload
         run: dotnet workload install maui
@@ -56,11 +56,11 @@ jobs:
   
           security list-keychains -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-  
+
       - name: Build Mac Catalyst App
         run: |
           dotnet publish -v d STRIKE/StrikeAI.csproj \
-            -f net9.0-maccatalyst -c Release \
+            -f net10.0-maccatalyst -c Release \
             -p:ArchiveOnBuild=true \
             -p:EnableCodeSigning=true \
             -p:EnablePackageSigning=true \
