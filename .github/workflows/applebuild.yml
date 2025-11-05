@@ -113,6 +113,29 @@ jobs:
       - name: Install MAUI workload
         run: dotnet workload install maui
 
+      - name: Import signing certificates
+        env:
+          DEV_APP_CERT_P12: ${{ secrets.APPLE_APP_CERT_BASE64 }}
+          DEV_APP_CERT_PASSWORD: ${{ secrets.APPLE_APP_CERT_PASSWORD }}
+          DEV_INSTALLER_CERT_P12: ${{ secrets.APPLE_INSTALLER_CERT_BASE64 }}
+          DEV_INSTALLER_CERT_PASSWORD: ${{ secrets.APPLE_INSTALLER_CERT_PASSWORD }}
+        run: |
+          # Create a temporary keychain
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+  
+          echo "$DEV_APP_CERT_P12" | base64 --decode > app_cert.p12
+          echo "$DEV_INSTALLER_CERT_P12" | base64 --decode > installer_cert.p12
+  
+          security import app_cert.p12 -k "$KEYCHAIN_PATH" -P "$DEV_APP_CERT_PASSWORD" -T /usr/bin/codesign
+          security import installer_cert.p12 -k "$KEYCHAIN_PATH" -P "$DEV_INSTALLER_CERT_PASSWORD" -T /usr/bin/productsign
+  
+          security list-keychains -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
       - name: Build Mac Catalyst App and Create .dmg
         run: |
           dotnet publish STRIKE/StrikeAI.csproj \
