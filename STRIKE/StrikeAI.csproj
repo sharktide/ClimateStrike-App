@@ -63,8 +63,8 @@
 		<UseInterpreter>false</UseInterpreter>
 		<UseHardenedRuntime>true</UseHardenedRuntime>
 		<TrimmerRootAssembly>STRIKE</TrimmerRootAssembly>
-		<TrimmerDefaultAction>link</TrimmerDefaultAction>
-		<IsTrimmable>true</IsTrimmable>
+		<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+		<PublishReadyToRun>false</PublishReadyToRun>
 	</PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)' == 'Windows'">
         <UseMonoRuntime>false</UseMonoRuntime>
