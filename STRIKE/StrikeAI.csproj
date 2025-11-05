@@ -104,6 +104,7 @@
 	  <TrimmerRootAssembly Include="MudBlazor" />
 	  <TrimmerRootAssembly Include="Microsoft.ML.OnnxRuntime" />
 	  <TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+  	  <TrimmerDescriptor Include="linker.xml" />
 	</ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-ios'">
