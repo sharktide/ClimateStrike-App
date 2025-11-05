@@ -136,7 +136,7 @@ jobs:
           security list-keychains -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-      - name: Build Mac Catalyst App and Create .dmg
+      - name: Build Mac Catalyst App and Create .pkg
         run: |
           dotnet publish STRIKE/StrikeAI.csproj \
             -f net10.0-maccatalyst -c Release \
@@ -146,29 +146,33 @@ jobs:
             -p:CodesignEntitlements="Platforms/MacCatalyst/Entitlements.plist" \
             -p:MacPackageType=dmg \
             -p:EnablePackageSigning=false
-
-      - name: Notarize .dmg
+      
+      - name: Manually sign .pkg
+        run: |
+          PKG_PATH=$(find STRIKE/bin/Release/net10.0-maccatalyst/publish -name "*.pkg" | head -n 1)
+          SIGNED_PKG="StrikeAI.pkg"
+          productsign --sign "Developer ID Installer: Navita Meher (5WY7FLX467)" "$PKG_PATH" "$SIGNED_PKG"
+      
+      - name: Notarize .pkg
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
-          DMG_PATH=$(find STRIKE/bin/Release/net10.0-maccatalyst/publish -name "*.dmg" | head -n 1)
-          echo "Notarizing $DMG_PATH ..."
-          xcrun notarytool submit "$DMG_PATH" \
+          echo "Notarizing StrikeAI.pkg ..."
+          xcrun notarytool submit StrikeAI.pkg \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
             --wait
           echo "Stapling notarization ticket..."
-          xcrun stapler staple "$DMG_PATH"
+          xcrun stapler staple StrikeAI.pkg
       
-      - name: Upload notarized DMG
+      - name: Upload notarized PKG
         uses: actions/upload-artifact@v4
         with:
-          name: StrikeAI-DMG
-          path: STRIKE/bin/Release/net10.0-maccatalyst/publish/**/*.dmg
-
+          name: StrikeAI-PKG
+          path: StrikeAI.pkg
 
   build-ios:
     if: ${{ github.event.inputs.target == 'net10.0-ios' }}
