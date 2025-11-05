@@ -58,13 +58,12 @@
     </PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-maccatalyst'">
-		<PublishTrimmed>true</PublishTrimmed>
 		<PublishAot>true</PublishAot>
 		<UseInterpreter>false</UseInterpreter>
 		<UseHardenedRuntime>true</UseHardenedRuntime>
 		<TrimmerRootAssembly>STRIKE</TrimmerRootAssembly>
 		<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
-		<PublishReadyToRun>false</PublishReadyToRun>
+		<PublishReadyToRun>true</PublishReadyToRun>
 	</PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)' == 'Windows'">
         <UseMonoRuntime>false</UseMonoRuntime>
