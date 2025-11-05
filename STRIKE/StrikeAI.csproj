@@ -100,6 +100,13 @@
         <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.22.1" />
         <PackageReference Include="MudBlazor" Version="8.9.0" />
     </ItemGroup>
+	<ItemGroup>
+	  <TrimmerRootAssembly Include="MudBlazor" />
+	  <TrimmerRootAssembly Include="Microsoft.ML.OnnxRuntime" />
+	  <TrimmerRootAssembly Include="Microsoft.ML.OnnxRuntime.Managed" />
+	  <TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+	</ItemGroup>
+
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-ios'">
         <NativeReference Include="dep/onnxruntime.xcframework">
             <Kind>Static</Kind>
