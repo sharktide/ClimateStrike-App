@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
-	  <BaseTargetFrameworks>net9.0-android;net10.0-ios;net10.0-maccatalyst</BaseTargetFrameworks>
+	  <BaseTargetFrameworks>net9.0-android;net10.0-ios;net9.0-maccatalyst</BaseTargetFrameworks>
 	  <TargetFrameworks>$(BaseTargetFrameworks)</TargetFrameworks>
 	</PropertyGroup>
 	
@@ -57,7 +57,7 @@
         <NoWarn>$(NoWarn);MUD0002</NoWarn>
     </PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-maccatalyst'">
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-maccatalyst'">
 		<PublishAot>true</PublishAot>
 		<UseInterpreter>false</UseInterpreter>
 		<UseHardenedRuntime>true</UseHardenedRuntime>
