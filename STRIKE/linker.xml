@@ -5,4 +5,8 @@
   <assembly fullname="Microsoft.AspNetCore.Components.WebView">
     <type fullname="Microsoft.AspNetCore.Components.WebView.*" preserve="all"/>
   </assembly>
+  <assembly fullname="Microsoft.JSInterop">
+    <type fullname="Microsoft.JSInterop.*" preserve="all"/>
+  </assembly>
+
 </linker>
