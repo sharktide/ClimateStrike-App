@@ -10,11 +10,11 @@ on:
           type: choice
           options:
             - net10.0-ios
-            - net10.0-maccatalyst
+            - net9.0-maccatalyst
 
 jobs:
   build-maccatalyst:
-    if: ${{ github.event.inputs.target == 'net10.0-maccatalyst' }}
+    if: ${{ github.event.inputs.target == 'net9.0-maccatalyst' }}
     runs-on: macos-latest
 
     steps:
@@ -60,7 +60,7 @@ jobs:
       - name: Build Mac Catalyst App and Create .pkg
         run: |
           dotnet publish STRIKE/StrikeAI.csproj \
-            -f net10.0-maccatalyst -c Release \
+            -f net9.0-maccatalyst -c Release \
             -p:ArchiveOnBuild=true \
             -p:EnableCodeSigning=true \
             -p:CodesignKey="Developer ID Application: Navita Meher (5WY7FLX467)" \
