@@ -110,6 +110,7 @@
             <LinkerFlags>-lc++</LinkerFlags>
             <WeakFrameworks>CoreML</WeakFrameworks>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<PublishReadyToRun>true</PublishReadyReadyToRun>
         </NativeReference>
     </ItemGroup>
 
