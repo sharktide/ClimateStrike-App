@@ -103,7 +103,6 @@
 	<ItemGroup>
 	  <TrimmerRootAssembly Include="MudBlazor" />
 	  <TrimmerRootAssembly Include="Microsoft.ML.OnnxRuntime" />
-	  <TrimmerRootAssembly Include="Microsoft.ML.OnnxRuntime.Managed" />
 	  <TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebView.Maui" />
 	</ItemGroup>
 
