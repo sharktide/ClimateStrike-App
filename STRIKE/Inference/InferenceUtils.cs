@@ -14,10 +14,8 @@ limitations under the License. */
 
 namespace STRIKE.InferenceUtils;
 #pragma warning disable CS0618
-using System.Text.Json.Serialization;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
-using System.Text.Json;
 using System.IO;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Controls;
@@ -28,6 +26,15 @@ using System.Threading.Tasks;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using STRIKE.Services;
+
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNameCaseInsensitive = true)]
+[JsonSerializable(typeof(List<PredictionResult>))]
+internal partial class PredictionJsonContext : JsonSerializerContext
+{
+}
 public static class ScalerLoader
 {
     private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions
@@ -361,21 +368,14 @@ public class StandardScaler
     }
 }
 
-
-
 public static class SysIO
 {
-    private static readonly JsonSerializerOptions CachedJsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        WriteIndented = true
-    };
     public static readonly string appDataPath = FileSystem.AppDataDirectory;
     public static readonly string recentPredictions = Path.Combine(appDataPath ?? "./", "predictions.json");
 
     public static string SavePrediction(string disasterType, string label, float probability, bool trust, Dictionary<string, float> inputs)
     {
-        var prediction = new STRIKE.Services.PredictionResult
+        var prediction = new PredictionResult
         {
             DisasterType = disasterType,
             Label = label,
@@ -385,14 +385,14 @@ public static class SysIO
             Timestamp = DateTime.Now
         };
 
-        List<STRIKE.Services.PredictionResult> history;
+        List<PredictionResult> history;
 
         try
         {
             if (File.Exists(recentPredictions))
             {
                 var json = File.ReadAllText(recentPredictions);
-                history = JsonSerializer.Deserialize<List<STRIKE.Services.PredictionResult>>(json) ?? [];
+                history = JsonSerializer.Deserialize(json, PredictionJsonContext.Default.ListPredictionResult) ?? [];
             }
             else
             {
@@ -406,16 +406,17 @@ public static class SysIO
 
         history.Insert(0, prediction);
 
-        var outJson = JsonSerializer.Serialize(history, CachedJsonOptions);
+        var outJson = JsonSerializer.Serialize(history, PredictionJsonContext.Default.ListPredictionResult);
         File.WriteAllText(recentPredictions, outJson);
         return $"written text to {recentPredictions}. Data: {outJson}";
     }
-    public static List<STRIKE.Services.PredictionResult> GetPredictionHistory()
+
+    public static List<PredictionResult> GetPredictionHistory()
     {
         if (File.Exists(recentPredictions))
         {
             var json = File.ReadAllText(recentPredictions);
-            var history = JsonSerializer.Deserialize<List<STRIKE.Services.PredictionResult>>(json, CachedJsonOptions);
+            var history = JsonSerializer.Deserialize(json, PredictionJsonContext.Default.ListPredictionResult);
             return history ?? [];
         }
         else
@@ -423,13 +424,14 @@ public static class SysIO
             return [];
         }
     }
+
     public static void DeletePrediction(DateTime timestamp)
     {
         if (!File.Exists(recentPredictions)) return;
         var json = File.ReadAllText(recentPredictions);
-        var history = JsonSerializer.Deserialize<List<STRIKE.Services.PredictionResult>>(json, CachedJsonOptions) ?? [];
+        var history = JsonSerializer.Deserialize(json, PredictionJsonContext.Default.ListPredictionResult) ?? [];
         var newHistory = history.Where(p => p.Timestamp != timestamp).ToList();
-        var outJson = JsonSerializer.Serialize(newHistory, CachedJsonOptions);
+        var outJson = JsonSerializer.Serialize(newHistory, PredictionJsonContext.Default.ListPredictionResult);
         File.WriteAllText(recentPredictions, outJson);
     }
 
@@ -440,5 +442,4 @@ public static class SysIO
             File.Delete(recentPredictions);
         }
     }
-
 }
