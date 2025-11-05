@@ -70,7 +70,7 @@ jobs:
       
       - name: Manually sign .pkg
         run: |
-          PKG_PATH=$(find STRIKE/bin/Release/net10.0-maccatalyst/publish -name "*.pkg" | head -n 1)
+          PKG_PATH=$(find STRIKE/bin/Release/net9.0-maccatalyst/publish -name "*.pkg" | head -n 1)
           SIGNED_PKG="StrikeAI.pkg"
           productsign --sign "Developer ID Installer: Navita Meher (5WY7FLX467)" "$PKG_PATH" "$SIGNED_PKG"
       
