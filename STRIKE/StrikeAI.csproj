@@ -56,11 +56,20 @@
         <NoWarn>$(NoWarn);MUD0002</NoWarn>
     </PropertyGroup>
 
+	<!--
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-maccatalyst'">
 		<PublishAot>true</PublishAot>
 		<UseInterpreter>false</UseInterpreter>
 		<UseHardenedRuntime>true</UseHardenedRuntime>
 		<TrimmerRootAssembly>STRIKE</TrimmerRootAssembly>
+		<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+	</PropertyGroup>
+	-->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-maccatalyst'">
+		<PublishAot>false</PublishAot>
+		<UseInterpreter>true</UseInterpreter>
+		<UseHardenedRuntime>true</UseHardenedRuntime>
+		<MTouchLink>SdkOnly</MTouchLink>
 		<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
 	</PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)' == 'Windows'">
@@ -99,12 +108,14 @@
         <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.22.1" />
         <PackageReference Include="MudBlazor" Version="8.9.0" />
     </ItemGroup>
+	<!--
 	<ItemGroup>
 	  <TrimmerRootAssembly Include="MudBlazor" />
 	  <TrimmerRootAssembly Include="Microsoft.ML.OnnxRuntime" />
 	  <TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebView.Maui" />
   	  <TrimmerDescriptor Include="linker.xml" />
 	</ItemGroup>
+	-->
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-ios'">
         <NativeReference Include="dep/onnxruntime.xcframework">
