@@ -64,6 +64,7 @@
 		<TrimmerRootAssembly>STRIKE</TrimmerRootAssembly>
 		<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
 		<PublishReadyToRun>true</PublishReadyToRun>
+		<RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)' == 'Windows'">
         <UseMonoRuntime>false</UseMonoRuntime>
