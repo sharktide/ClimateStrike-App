@@ -5,15 +5,11 @@
              x:Class="STRIKE.App">
     <Application.Resources>
         <ResourceDictionary>
-
-        <!--
-            For information about styling .NET MAUI pages
-            please refer to the documentation:
-            https://go.microsoft.com/fwlink/?linkid=2282329
-        -->
-
+            <Color x:Key="AppBackgroundLight">#FFFFFF</Color>
+            <Color x:Key="AppBackgroundDark">#32333d</Color>
         </ResourceDictionary>
     </Application.Resources>
+
 </Application>
 
    <!-- Copyright 2025 Rihaan Meher
