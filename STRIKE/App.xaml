@@ -6,7 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <Color x:Key="AppBackgroundLight">#FFFFFF</Color>
-            <Color x:Key="AppBackgroundDark">#32333d</Color>
+            <Color x:Key="AppBackgroundDark">#27272f</Color>
         </ResourceDictionary>
     </Application.Resources>
 
