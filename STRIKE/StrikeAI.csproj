@@ -3,7 +3,9 @@
 	  <BaseTargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</BaseTargetFrameworks>
 	  <TargetFrameworks>$(BaseTargetFrameworks)</TargetFrameworks>
 	</PropertyGroup>
-    <ApplicationId>com.companyname.strike.5WY7FLX467</ApplicationId>	
+	<PropertyGroup>
+      <ApplicationId>com.companyname.strike.5WY7FLX467</ApplicationId>
+	</PropertyGroup>
 	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
 	  <TargetFrameworks>net9.0-windows10.0.19041.0</TargetFrameworks>
       <ApplicationId>com.companyname.strike</ApplicationId>
