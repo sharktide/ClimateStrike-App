@@ -143,10 +143,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
-
-      - name: Install MAUI workload
-        run: dotnet workload install maui
-
+  
       - name: Import Distribution Certificate
         env:
           DIST_CERT_BASE64: ${{ secrets.DIST_CERT_BASE64 }}
@@ -163,6 +160,9 @@ jobs:
 
           security list-keychains -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui
 
       - name: Install Provisioning Profile
         env:
