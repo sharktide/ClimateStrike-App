@@ -147,7 +147,7 @@ jobs:
       - name: Import Distribution Certificate
         env:
           DIST_CERT_BASE64: ${{ secrets.DIST_CERT_BASE64 }}
-          DIST_CERT_BASE64_PASSWORD: ${{ secrets.DIST_CERT_BASE64_PASSWORD }}
+          DIST_CERT_BASE64_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
         run: |
           KEYCHAIN_PATH="$RUNNER_TEMP/dist.keychain-db"
           KEYCHAIN_PASSWORD=$(uuidgen)
