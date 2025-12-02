@@ -193,7 +193,7 @@ jobs:
       - name: Generate AppStoreInfo.plist from Archive
         run: |
           xcodebuild -exportArchive -archivePath "$ARCHIVE_PATH" \
-            -exportOptionsPlist Platforms/iOS/ExportOptions.plist \
+            -exportOptionsPlist STRIKE/Platforms/iOS/ExportOptions.plist \
             -exportPath "$PUBLISH_DIR" 
           
       - name: Upload Signed IPA Artifact
