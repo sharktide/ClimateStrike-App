@@ -68,7 +68,7 @@ jobs:
             -p:CodesignEntitlements="Platforms/MacCatalyst/Entitlements.plist" \
             -p:MacPackageType=dmg \
             -p:EnablePackageSigning=false
-      
+  
       - name: Manually sign .pkg
         run: |
           PKG_PATH=$(find STRIKE/bin/Release/net9.0-maccatalyst/publish -name "*.pkg" | head -n 1)
@@ -180,6 +180,22 @@ jobs:
             -p:CodesignKey="Apple Distribution: Navita Meher (5WY7FLX467)" \
             -p:CodesignProvision="App Store"
 
+      - name: Locate Archive and Output Paths
+        id: set_paths
+        run: |
+          # Find the generated paths
+          ARCHIVE_PATH=$(find ~/Library/Developer/Xcode/Archives/ -name "*.xcarchive" | sort | tail -n 1)
+          PUBLISH_DIR=$(find STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/ -type d -depth 1)
+
+          echo "ARCHIVE_PATH=$ARCHIVE_PATH" >> $GITHUB_ENV
+          echo "PUBLISH_DIR=$PUBLISH_DIR" >> $GITHUB_ENV
+
+      - name: Generate AppStoreInfo.plist from Archive
+        run: |
+          xcodebuild -exportArchive -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist Platforms/iOS/ExportOptions.plist \
+            -exportPath "$PUBLISH_DIR" 
+          
       - name: Upload Signed IPA Artifact
         uses: actions/upload-artifact@v4
         with:
