@@ -204,15 +204,15 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
+  
+      # - name: Download .pkg file
+      #   run: curl -L -o iTMSTransporter-4.1.0.19.pkg "https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa/ra/resources/download/public/Transporter__OSX/bin/"
 
-      - name: Install mas CLI
-        run: brew install mas
-
-      - name: Install Transporter
-        run: mas install 1388500129  # Transporter app ID
+      # - name: Install .pkg file
+      #   run: sudo installer -pkg iTMSTransporter-4.1.0.19.pkg -target /
 
       - name: Verify iTMSTransporter
-        run: /Applications/Transporter.app/Contents/itms/bin/iTMSTransporter -version
+        run: iTMSTransporter -version
 
       - name: Import Distribution Certificate
         env:
@@ -261,4 +261,4 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
         run: |
-          /Applications/Transporter.app/Contents/itms/bin/iTMSTransporter -m upload -assetFile STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/StrikeAI.ipa -u $APPLE_ID -p $APPLE_APP_SPECIFIC_PASSWORD -itc_provider 5WY7FLX467 
+          iTMSTransporter -m upload -assetFile STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/StrikeAI.ipa -u $APPLE_ID -p $APPLE_APP_SPECIFIC_PASSWORD -itc_provider 5WY7FLX467 
