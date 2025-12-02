@@ -189,8 +189,9 @@ jobs:
       - name: Generate AppStoreInfo.plist from Archive
         run: |
           xcodebuild -exportArchive -archivePath "$ARCHIVE_PATH" \
-            -exportOptionsPlist STRIKE/Platforms/iOS/ExportOptions.plist \
-            -exportPath "STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/" 
+            -exportPath "STRIKE/bin/Release/net9.0-ios/ios-arm64/publish/"
+            -exportOptionsJson '{"method": "app-store-connect", "teamID": "5WY7FLX467", "uploadBitcode": true, "uploadSymbols": true, "signingStyle": "manual", "provisioningProfiles": {"com.companyname.strike.5WY7FLX467": "be47957f-9ae0-4735-bbfc-13597c1f2f8e"}}'
+
           
       - name: Upload Signed IPA Artifact
         uses: actions/upload-artifact@v4
