@@ -74,7 +74,7 @@
             </MudSlider>
 
             
-            <MudSlider T="float" Min="0f" Max="2.0f" Step="0.01f"
+            <MudSlider T="float" Min="-1.0f" Max="1.0f" Step="0.01f"
                        @bind-Value="_vegetationIndex"
                        Variant="Variant.Filled"
                        Color="Color.Success"
@@ -230,7 +230,7 @@
                 ConvertTemperature(_temperature, _temperatureUnit),
                 _humidity,
                 ConvertWindSpeed(_windSpeed, _windSpeedUnit),
-                _vegetationIndex,
+                ConvertNdviToModel(_vegetationIndex),
                 ConvertElevation(_elevation, _elevationUnit)
             };
 
@@ -274,6 +274,9 @@
             "ft" => value * 0.3048f,
             _ => value
         };
+
+    private float ConvertNdviToModel(float ndvi) => ndvi + 1f;
+
 
     private void ResetPrediction()
     {
