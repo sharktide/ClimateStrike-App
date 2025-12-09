@@ -42,7 +42,11 @@
     </MudAppBar>
 
 
-    <MudDrawer Variant="DrawerVariant.Responsive" Elevation="6" Width="260px" Open="@_drawerOpen">
+    <MudDrawer Variant="DrawerVariant.Responsive"
+               Elevation="6"
+               Width="260px"
+               Open="@_drawerOpen"
+               OpenChanged="OnDrawerOpenChanged">
         <NavMenu />
     </MudDrawer>
 
@@ -95,5 +99,10 @@
         _isDarkMode = newValue;
         StateHasChanged();
         return Task.CompletedTask;
+    }
+    private void OnDrawerOpenChanged(bool isOpen)
+    {
+        _drawerOpen = isOpen;
+        StateHasChanged();
     }
 }
