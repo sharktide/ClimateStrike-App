@@ -7,7 +7,7 @@
   xmlns:uap18="http://schemas.microsoft.com/appx/manifest/uap/windows10/18"
   IgnorableNamespaces="uap rescap uap18">
 
-  <Identity Name="RihaanMeher.ClimateStrikeAI" Publisher="CN=9C12CF6A-5CA7-4C1D-AB00-E01E7C6C887A" Version="1.0.0.0" />
+  <Identity Name="RihaanMeher.ClimateStrikeAI" Publisher="CN=9C12CF6A-5CA7-4C1D-AB00-E01E7C6C887A" Version="1.2.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="5584F94A-5579-431D-9424-A930C9BE34E7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
