@@ -1,0 +1,141 @@
+@page "/pluvialflood"
+@using STRIKE
+@using STRIKE.Inference
+@using STRIKE.Services
+@inject RegionAutofillService Autofill
+
+<style>
+    html, body, .mud-layout, .mud-main-content, .mud-layout-content { background-color: #0a0d12 !important; }
+    .strike-grid-bg { position:fixed;inset:0;background-image:linear-gradient(rgba(59,124,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,124,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0; }
+    .page-shell { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px 64px;font-family:'Inter',sans-serif;color:#e8eaf0; }
+    .page-back { display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,234,240,.4);text-decoration:none;margin-bottom:20px;transition:color .15s; }
+    .page-back:hover { color:#5dade2; }
+    .page-header { display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07); }
+    .page-icon { width:46px;height:46px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5dade2,#2e86c1);box-shadow:0 0 20px rgba(93,173,226,.3); }
+    .page-icon .mud-icon-root { font-size:24px;color:#fff; }
+    .page-title { font-size:1.5rem;font-weight:700;line-height:1; }
+    .page-sub { font-size:.75rem;color:rgba(232,234,240,.45);margin-top:3px; }
+    .predictor-card { background:#111520;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;color:#e8eaf0; }
+    .param-block { margin-bottom:20px; }
+    .param-label { display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;letter-spacing:.03em;color:#e8eaf0;margin-bottom:2px; }
+    .param-hint { font-size:.7rem;color:rgba(232,234,240,.45);margin-bottom:6px; }
+    .result-card { border-radius:10px;padding:18px 20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);min-height:64px;display:flex;align-items:center; }
+    .result-text { font-size:1rem;font-weight:600;line-height:1.35; }
+    .section-sep { border:none;border-top:1px solid rgba(255,255,255,.07);margin:20px 0; }
+</style>
+
+<div class="strike-grid-bg"></div>
+<div class="page-shell">
+    <a class="page-back" href="/"><MudIcon Icon="@Icons.Material.Filled.ArrowBack" Style="font-size:15px;" /> Dashboard</a>
+    <div class="page-header">
+        <div class="page-icon"><MudIcon Icon="@Icons.Material.Filled.WaterDrop" /></div>
+        <div>
+            <div class="page-title">Pluvial Flood Predictor</div>
+            <div class="page-sub">Surface water flooding risk driven by rainfall overwhelm on urban and semi-urban areas</div>
+        </div>
+    </div>
+    <div class="predictor-card">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.MyLocation" Size="Size.Small" Color="Color.Info" />
+                    <MudText Typo="Typo.caption" Style="color:rgba(232,234,240,.6);">Autofill defaults for your region</MudText>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info" StartIcon="@Icons.Material.Filled.GpsFixed" Disabled="@_autofilling" OnClick="AutofillFromRegion">@(_autofilling ? "Locating…" : "Autofill")</MudButton>
+                </MudStack>
+                @if (_autofillError != null) { <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">@_autofillError</MudAlert> }
+
+                <div class="param-block">
+                    <div class="param-label">Rainfall Intensity <MudTooltip Text="Pluvial flooding occurs when drainage systems cannot cope with intense rainfall, independent of rivers." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – @RainfallMax.ToString("0") @(_rainfallUnit == "mm" ? "mm/hr" : "in/hr")</div>
+                    <MudSlider T="float" Min="0f" Max="@RainfallMax" Step="0.5f" @bind-Value="_rainfall" Variant="Variant.Filled" Color="Color.Info" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Dark">@_rainfall.ToString("0.0")</MudChip>
+                        <MudSelect T="string" Dense="true" @bind-Value="_rainfallUnit" Style="width:80px;"><MudSelectItem Value="@("mm")">mm/hr</MudSelectItem><MudSelectItem Value="@("in")">in/hr</MudSelectItem></MudSelect>
+                    </MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Impervious Ratio <MudTooltip Text="Proportion of surface that cannot absorb water (roads, rooftops, paving). Higher values mean rainfall becomes runoff almost immediately." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 1 ISR (0 = all permeable, 1 = fully paved)</div>
+                    <MudSlider T="float" Min="0f" Max="1f" Step="0.01f" @bind-Value="_imp" Variant="Variant.Filled" Color="Color.Info" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_imp.ToString("0.00")</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">ISR</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Drainage Density <MudTooltip Text="Length of drainage channels per unit area. Can still be overwhelmed during extreme rain events." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 5 L/A</div>
+                    <MudSlider T="float" Min="0f" Max="5f" Step="0.01f" @bind-Value="_dd" Variant="Variant.Filled" Color="Color.Info" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_dd.ToString("0.00")</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">L/A</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Urbanization Index <MudTooltip Text="Ratio of urban population to total population. Higher urbanisation typically correlates with more impervious surface and overwhelmed drains." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 1 (uP/tP)</div>
+                    <MudSlider T="float" Min="0f" Max="1f" Step="0.01f" @bind-Value="_ui" Variant="Variant.Filled" Color="Color.Info" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_ui.ToString("0.00")</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">uP/tP</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Convergence Index <MudTooltip Text="Measure of how much terrain funnels water to a single point. High values identify natural low spots where surface water accumulates." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 1 CI</div>
+                    <MudSlider T="float" Min="0f" Max="1f" Step="0.01f" @bind-Value="_ci" Variant="Variant.Filled" Color="Color.Info" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_ci.ToString("0.00")</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">CI</MudText></MudStack>
+                </div>
+
+                <hr class="section-sep" />
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-3">
+                    <MudTooltip Text="Uses the Pv-FloodTrustNet ensemble for higher-confidence results." Arrow="true"><MudCheckBox @bind-Value="_useTrust" T="bool" Label="Pv-FloodTrustNet" Color="Color.Primary" /></MudTooltip>
+                    <MudTooltip Text="Fetches supplementary online data during inference. Disabled on Apple platforms." Arrow="true"><MudCheckBox @bind-Value="_useInternet" T="bool" Label="Use Internet" Disabled="@_isApplePlatform" Color="Color.Secondary" /></MudTooltip>
+                </MudStack>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" FullWidth="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.Analytics" Disabled="@_isPredicting" OnClick="RunPrediction">@(_isPredicting ? "Analysing…" : "Run Prediction")</MudButton>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.overline" Style="opacity:.5;letter-spacing:.1em;">Pluvial Flood Risk Verdict</MudText>
+                <div class="result-card mt-1 mb-4">
+                    @if (_isPredicting) { <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Small" Class="mr-3" /><MudText Class="result-text" Style="opacity:.6;">Running model…</MudText> }
+                    else if (!string.IsNullOrWhiteSpace(_predictionResult)) { <MudText Class="result-text">@_predictionResult</MudText> }
+                    else { <MudText Style="opacity:.3;font-size:.85rem;">Adjust the parameters and press Run Prediction.</MudText> }
+                </div>
+                @if (_showAlert) { <MudAlert Severity="@_alertSeverity" Dense="true" Class="mb-3">@_alertMessage</MudAlert> }
+                <MudExpansionPanels Elevation="0">
+                    <MudExpansionPanel Style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;">
+                        <TitleContent><MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2"><MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Small" Style="opacity:.6;" /><MudText Typo="Typo.body2">Parameter Reference</MudText></MudStack></TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Rainfall Intensity</strong> — Rainfall rate in mm/hr or in/hr.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Impervious Ratio (ISR)</strong> — Proportion of surface area that cannot absorb water.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Drainage Density (L/A)</strong> — Drainage channel length per unit area.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Urbanization Index (uP/tP)</strong> — Estimate of built-up density and infrastructure pressure.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block"><strong>Convergence Index (CI)</strong> — Terrain feature promoting water pooling or runoff directionality.</MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code {
+    private bool _isPredicting, _autofilling; private string? _autofillError;
+    private string _alertMessage = ""; private Severity _alertSeverity = Severity.Normal; private bool _showAlert;
+    private bool _useInternet = true; private bool _isApplePlatform = OperatingSystem.IsIOS() || OperatingSystem.IsMacOS();
+    private float _rainfall = 20f, _imp = 0.5f, _ui = 0.6f, _dd = 2.5f, _ci = 0.5f;
+    private string _rainfallUnit = "mm"; private bool _useTrust = true; private string _predictionResult = "";
+    private float RainfallMax => _rainfallUnit == "mm" ? 150f : 15f;
+    protected override void OnInitialized() { if (_isApplePlatform) _useInternet = true; }
+    private async Task AutofillFromRegion()
+    {
+        _autofilling = true; _autofillError = null; StateHasChanged();
+        try { var d = await Autofill.GetFloodDefaultsAsync(); if (d == null) { _autofillError = "Location unavailable. Please allow location access and try again."; return; } _rainfall = d.RainfallMmHr; _rainfallUnit = "mm"; }
+        catch (Exception ex) { _autofillError = $"Autofill failed: {ex.Message}"; }
+        finally { _autofilling = false; StateHasChanged(); }
+    }
+    private async Task RunPrediction()
+    {
+        _isPredicting = true; _showAlert = false; _predictionResult = ""; StateHasChanged();
+        try { var rain = _rainfallUnit == "mm" ? _rainfall : _rainfall * 25.4f; _predictionResult = await Task.Run(() => PVFloodModelRunner.Predict(new[] { rain, _imp, _dd, _ui, _ci }, _useTrust, _useInternet)); _alertMessage = "Prediction successful."; _alertSeverity = Severity.Success; _showAlert = true; }
+        catch (Exception ex) { _predictionResult = ""; _alertMessage = $"Prediction failed: {ex.Message}"; _alertSeverity = Severity.Error; _showAlert = true; }
+        finally { _isPredicting = false; StateHasChanged(); }
+    }
+}

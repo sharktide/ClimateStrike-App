@@ -1,0 +1,150 @@
+@page "/fluvialflood"
+@using STRIKE
+@using STRIKE.Inference
+@using STRIKE.Services
+@inject RegionAutofillService Autofill
+
+<style>
+    html, body, .mud-layout, .mud-main-content, .mud-layout-content { background-color: #0a0d12 !important; }
+    .strike-grid-bg { position:fixed;inset:0;background-image:linear-gradient(rgba(59,124,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,124,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0; }
+    .page-shell { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px 64px;font-family:'Inter',sans-serif;color:#e8eaf0; }
+    .page-back { display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,234,240,.4);text-decoration:none;margin-bottom:20px;transition:color .15s; }
+    .page-back:hover { color:#1abc9c; }
+    .page-header { display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07); }
+    .page-icon { width:46px;height:46px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1abc9c,#0e7e6a);box-shadow:0 0 20px rgba(26,188,156,.3); }
+    .page-icon .mud-icon-root { font-size:24px;color:#fff; }
+    .page-title { font-size:1.5rem;font-weight:700;line-height:1; }
+    .page-sub { font-size:.75rem;color:rgba(232,234,240,.45);margin-top:3px; }
+    .predictor-card { background:#111520;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;color:#e8eaf0; }
+    .param-block { margin-bottom:20px; }
+    .param-label { display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;letter-spacing:.03em;color:#e8eaf0;margin-bottom:2px; }
+    .param-hint { font-size:.7rem;color:rgba(232,234,240,.45);margin-bottom:6px; }
+    .result-card { border-radius:10px;padding:18px 20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);min-height:64px;display:flex;align-items:center; }
+    .result-text { font-size:1rem;font-weight:600;line-height:1.35; }
+    .section-sep { border:none;border-top:1px solid rgba(255,255,255,.07);margin:20px 0; }
+</style>
+
+<div class="strike-grid-bg"></div>
+<div class="page-shell">
+    <a class="page-back" href="/"><MudIcon Icon="@Icons.Material.Filled.ArrowBack" Style="font-size:15px;" /> Dashboard</a>
+    <div class="page-header">
+        <div class="page-icon"><MudIcon Icon="@Icons.Material.Filled.Water" /></div>
+        <div>
+            <div class="page-title">Fluvial Flood Predictor</div>
+            <div class="page-sub">River-overflow flood risk based on water level, elevation, and proximity parameters</div>
+        </div>
+    </div>
+    <div class="predictor-card">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.MyLocation" Size="Size.Small" Color="Color.Tertiary" />
+                    <MudText Typo="Typo.caption" Style="color:rgba(232,234,240,.6);">Autofill defaults for your region</MudText>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.GpsFixed" Disabled="@_autofilling" OnClick="AutofillFromRegion">@(_autofilling ? "Locating…" : "Autofill")</MudButton>
+                </MudStack>
+                @if (_autofillError != null) { <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">@_autofillError</MudAlert> }
+
+                <div class="param-block">
+                    <div class="param-label">Rainfall <MudTooltip Text="Sustained rainfall feeding the river catchment. Fluvial flooding is driven by persistent rain over 12–72 hours." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – @RainfallMax.ToString("0") @(_rainfallUnit == "mm" ? "mm/hr" : "in/hr")</div>
+                    <MudSlider T="float" Min="0f" Max="@RainfallMax" Step="0.5f" @bind-Value="_rainfall" Variant="Variant.Filled" Color="Color.Tertiary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Dark">@_rainfall.ToString("0.0")</MudChip>
+                        <MudSelect T="string" Dense="true" @bind-Value="_rainfallUnit" Style="width:80px;"><MudSelectItem Value="@("mm")">mm/hr</MudSelectItem><MudSelectItem Value="@("in")">in/hr</MudSelectItem></MudSelect>
+                    </MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Relative Water Level <MudTooltip Text="Water level relative to the normal river surface. Bank-full is approximately 3000 mm. Values approaching the maximum indicate imminent overflow." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 6000 mm  (bank-full ≈ 3000 mm)</div>
+                    <MudSlider T="float" Min="0f" Max="6000f" Step="1f" @bind-Value="_rwl" Variant="Variant.Filled" Color="Color.Tertiary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_rwl.ToString()</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">mm</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Relative Slope <MudTooltip Text="Terrain slope relative to the river channel. Flatter terrain retains floodwater longer; steeper terrain drains faster." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 90 °</div>
+                    <MudSlider T="float" Min="0f" Max="90f" Step="1f" @bind-Value="_slope" Variant="Variant.Filled" Color="Color.Tertiary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_slope.ToString()</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">°</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Relative Elevation <MudTooltip Text="Height of the location above the river water level. Areas below 5 m are highly vulnerable to fluvial inundation." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – @ElevationMax.ToString("0") @_elevationUnit</div>
+                    <MudSlider T="float" Min="0f" Max="@ElevationMax" Step="10f" @bind-Value="_elevation" Variant="Variant.Filled" Color="Color.Tertiary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Dark">@_elevation.ToString()</MudChip>
+                        <MudSelect T="string" Dense="true" @bind-Value="_elevationUnit" Style="width:72px;"><MudSelectItem Value="@("m")">m</MudSelectItem><MudSelectItem Value="@("ft")">ft</MudSelectItem></MudSelect>
+                    </MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Distance From River <MudTooltip Text="Straight-line distance from the nearest river channel. Proximity is the strongest predictor of fluvial flood inundation." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – @distMax.ToString("0") @_distUnit</div>
+                    <MudSlider T="float" Min="0f" Max="@distMax" Step="1f" @bind-Value="_dist" Variant="Variant.Filled" Color="Color.Tertiary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Dark">@_dist.ToString()</MudChip>
+                        <MudSelect T="string" Dense="true" @bind-Value="_distUnit" Style="width:72px;"><MudSelectItem Value="@("m")">m</MudSelectItem><MudSelectItem Value="@("ft")">ft</MudSelectItem></MudSelect>
+                    </MudStack>
+                </div>
+
+                <hr class="section-sep" />
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-3">
+                    <MudTooltip Text="Uses the FV-FloodTrustNet ensemble for higher-confidence results." Arrow="true"><MudCheckBox @bind-Value="_useTrust" T="bool" Label="FV-FloodTrustNet" Color="Color.Primary" /></MudTooltip>
+                    <MudTooltip Text="Fetches supplementary online data during inference. Disabled on Apple platforms." Arrow="true"><MudCheckBox @bind-Value="_useInternet" T="bool" Label="Use Internet" Disabled="@_isApplePlatform" Color="Color.Secondary" /></MudTooltip>
+                </MudStack>
+                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" FullWidth="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.Analytics" Disabled="@_isPredicting" OnClick="RunPrediction">@(_isPredicting ? "Analysing…" : "Run Prediction")</MudButton>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.overline" Style="opacity:.5;letter-spacing:.1em;">Fluvial Flood Risk Verdict</MudText>
+                <div class="result-card mt-1 mb-4">
+                    @if (_isPredicting) { <MudProgressCircular Indeterminate="true" Color="Color.Tertiary" Size="Size.Small" Class="mr-3" /><MudText Class="result-text" Style="opacity:.6;">Running model…</MudText> }
+                    else if (!string.IsNullOrWhiteSpace(_predictionResult)) { <MudText Class="result-text">@_predictionResult</MudText> }
+                    else { <MudText Style="opacity:.3;font-size:.85rem;">Adjust the parameters and press Run Prediction.</MudText> }
+                </div>
+                @if (_showAlert) { <MudAlert Severity="@_alertSeverity" Dense="true" Class="mb-3">@_alertMessage</MudAlert> }
+                <MudExpansionPanels Elevation="0">
+                    <MudExpansionPanel Style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;">
+                        <TitleContent><MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2"><MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Small" Style="opacity:.6;" /><MudText Typo="Typo.body2">Parameter Reference</MudText></MudStack></TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Rainfall</strong> — Rainfall rate feeding river catchment in mm/hr or in/hr.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Relative Water Level (mm)</strong> — Water level relative to normal river surface; bank-full ≈ 3000 mm.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Relative Slope (°)</strong> — Terrain slope relative to the river channel.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Relative Elevation</strong> — Height above river water level in metres or feet.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block"><strong>Distance From River</strong> — Distance from the nearest river channel.</MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code {
+    private bool _isPredicting, _autofilling; private string? _autofillError;
+    private string _alertMessage = ""; private Severity _alertSeverity = Severity.Normal; private bool _showAlert;
+    private bool _useInternet = true; private bool _isApplePlatform = OperatingSystem.IsIOS() || OperatingSystem.IsMacOS();
+    private float _rainfall = 40f, _rwl = 3000f, _elevation = 5f, _slope = 5f, _dist = 25f;
+    private string _rainfallUnit = "mm", _elevationUnit = "m", _distUnit = "m";
+    private bool _useTrust = true; private string _predictionResult = "";
+    private float RainfallMax => _rainfallUnit == "mm" ? 200f : 20f;
+    private float distMax => _distUnit == "m" ? 2000f : 6000f;
+    private float ElevationMax => _elevationUnit == "ft" ? 10000f : 3000f;
+    protected override void OnInitialized() { if (_isApplePlatform) _useInternet = true; }
+    private async Task AutofillFromRegion()
+    {
+        _autofilling = true; _autofillError = null; StateHasChanged();
+        try { var d = await Autofill.GetFloodDefaultsAsync(); if (d == null) { _autofillError = "Location unavailable. Please allow location access and try again."; return; } _rainfall = d.RainfallMmHr; _rainfallUnit = "mm"; _elevation = Math.Min(d.Elevation > 0 ? d.Elevation : 5f, 3000f); _elevationUnit = "m"; }
+        catch (Exception ex) { _autofillError = $"Autofill failed: {ex.Message}"; }
+        finally { _autofilling = false; StateHasChanged(); }
+    }
+    private async Task RunPrediction()
+    {
+        _isPredicting = true; _showAlert = false; _predictionResult = ""; StateHasChanged();
+        try { var rain = _rainfallUnit == "mm" ? _rainfall : _rainfall * 25.4f; var elM = _elevationUnit == "ft" ? _elevation * 0.3048f : _elevation; var dstM = _distUnit == "ft" ? _dist * 0.3048f : _dist; _predictionResult = await Task.Run(() => FVFloodModelRunner.Predict(new[] { rain, _rwl, elM, _slope, dstM }, _useTrust, _useInternet)); _alertMessage = "Prediction successful."; _alertSeverity = Severity.Success; _showAlert = true; }
+        catch (Exception ex) { _predictionResult = ""; _alertMessage = $"Prediction failed: {ex.Message}"; _alertSeverity = Severity.Error; _showAlert = true; }
+        finally { _isPredicting = false; StateHasChanged(); }
+    }
+}

@@ -1,0 +1,137 @@
+@page "/tornado"
+@using STRIKE
+@using STRIKE.Inference
+@using STRIKE.Services
+@inject RegionAutofillService Autofill
+
+<style>
+    html, body, .mud-layout, .mud-main-content, .mud-layout-content { background-color: #0a0d12 !important; }
+    .strike-grid-bg { position:fixed;inset:0;background-image:linear-gradient(rgba(59,124,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,124,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0; }
+    .page-shell { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px 64px;font-family:'Inter',sans-serif;color:#e8eaf0; }
+    .page-back { display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,234,240,.4);text-decoration:none;margin-bottom:20px;transition:color .15s; }
+    .page-back:hover { color:#9b59b6; }
+    .page-header { display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07); }
+    .page-icon { width:46px;height:46px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#9b59b6,#6c3483);box-shadow:0 0 20px rgba(155,89,182,.3); }
+    .page-icon .mud-icon-root { font-size:24px;color:#fff; }
+    .page-title { font-size:1.5rem;font-weight:700;line-height:1; }
+    .page-sub { font-size:.75rem;color:rgba(232,234,240,.45);margin-top:3px; }
+    .predictor-card { background:#111520;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;color:#e8eaf0; }
+    .param-block { margin-bottom:20px; }
+    .param-label { display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;letter-spacing:.03em;color:#e8eaf0;margin-bottom:2px; }
+    .param-hint { font-size:.7rem;color:rgba(232,234,240,.45);margin-bottom:6px; }
+    .result-card { border-radius:10px;padding:18px 20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);min-height:64px;display:flex;align-items:center; }
+    .result-text { font-size:1rem;font-weight:600;line-height:1.35; }
+    .section-sep { border:none;border-top:1px solid rgba(255,255,255,.07);margin:20px 0; }
+</style>
+
+<div class="strike-grid-bg"></div>
+<div class="page-shell">
+    <a class="page-back" href="/"><MudIcon Icon="@Icons.Material.Filled.ArrowBack" Style="font-size:15px;" /> Dashboard</a>
+    <div class="page-header">
+        <div class="page-icon"><MudIcon Icon="@Icons.Material.Filled.Air" /></div>
+        <div>
+            <div class="page-title">Tornado Predictor</div>
+            <div class="page-sub">Tornado formation risk based on atmospheric instability and wind parameters</div>
+        </div>
+    </div>
+    <div class="predictor-card">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.MyLocation" Size="Size.Small" Color="Color.Secondary" />
+                    <MudText Typo="Typo.caption" Style="color:rgba(232,234,240,.6);">Autofill defaults for your region</MudText>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.GpsFixed" Disabled="@_autofilling" OnClick="AutofillFromRegion">@(_autofilling ? "Locating…" : "Autofill")</MudButton>
+                </MudStack>
+                @if (_autofillError != null) { <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">@_autofillError</MudAlert> }
+
+                <div class="param-block">
+                    <div class="param-label">Storm Relative Helicity (SRH) <MudTooltip Text="Potential for rotating updrafts. Values above 150 m²/s² begin to support supercell formation." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 100 – 500 m²/s²</div>
+                    <MudSlider T="float" Min="100f" Max="500f" Step="1f" @bind-Value="_srh" Variant="Variant.Filled" Color="Color.Secondary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_srh.ToString()</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">m²/s²</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">CAPE <MudTooltip Text="Convective Available Potential Energy — buoyant energy for strong vertical air motion. Higher CAPE fuels more intense storms." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 4000 J/kg</div>
+                    <MudSlider T="float" Min="0f" Max="4000f" Step="1f" @bind-Value="_cape" Variant="Variant.Filled" Color="Color.Secondary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_cape.ToString()</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">J/kg</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Lifted Condensation Level (LCL) <MudTooltip Text="Height at which a rising parcel becomes saturated. Lower LCL (< 1000 m) favours low-level vortex development and touchdowns." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 300 – 2000 m</div>
+                    <MudSlider T="float" Min="300f" Max="2000f" Step="1f" @bind-Value="_lcl" Variant="Variant.Filled" Color="Color.Secondary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_lcl.ToString()</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">m</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Bulk Wind Shear <MudTooltip Text="Change in wind speed/direction from surface to 6 km altitude. Values above 15 m/s strongly support supercell organisation." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0 – 30 m/s (0–6 km layer)</div>
+                    <MudSlider T="float" Min="0f" Max="30f" Step="1f" @bind-Value="_shear" Variant="Variant.Filled" Color="Color.Secondary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_shear.ToString()</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">m/s</MudText></MudStack>
+                </div>
+
+                <div class="param-block">
+                    <div class="param-label">Significant Tornado Parameter (STP) <MudTooltip Text="Composite index combining CAPE, LCL, SRH and shear. Values above 1 indicate a significant tornado threat." Arrow="true"><MudIcon Icon="@Icons.Material.Outlined.Info" Style="font-size:15px;opacity:.5;" /></MudTooltip></div>
+                    <div class="param-hint">Range: 0.0 – 5.0</div>
+                    <MudSlider T="float" Min="0.0f" Max="5.0f" Step="0.01f" @bind-Value="_stp" Variant="Variant.Filled" Color="Color.Secondary" ValueLabel="true" />
+                    <MudStack Row="true" Spacing="1"><MudChip T="string" Size="Size.Small" Color="Color.Dark">@_stp.ToString("0.00")</MudChip><MudText Typo="Typo.caption" Style="opacity:.6;">STP</MudText></MudStack>
+                </div>
+
+                <hr class="section-sep" />
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-3">
+                    <MudTooltip Text="Uses the TornadoTrustNet ensemble for higher-confidence results." Arrow="true"><MudCheckBox @bind-Value="_useTrust" T="bool" Label="TornadoTrustNet" Color="Color.Primary" /></MudTooltip>
+                    <MudTooltip Text="Fetches supplementary online data during inference. Disabled on Apple platforms." Arrow="true"><MudCheckBox @bind-Value="_useInternet" T="bool" Label="Use Internet" Disabled="@_isApplePlatform" Color="Color.Secondary" /></MudTooltip>
+                </MudStack>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" FullWidth="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.Analytics" Disabled="@_isPredicting" OnClick="RunPrediction">@(_isPredicting ? "Analysing…" : "Run Prediction")</MudButton>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.overline" Style="opacity:.5;letter-spacing:.1em;">Tornado Formation Verdict</MudText>
+                <div class="result-card mt-1 mb-4">
+                    @if (_isPredicting) { <MudProgressCircular Indeterminate="true" Color="Color.Secondary" Size="Size.Small" Class="mr-3" /><MudText Class="result-text" Style="opacity:.6;">Running model…</MudText> }
+                    else if (!string.IsNullOrWhiteSpace(_predictionResult)) { <MudText Class="result-text">@_predictionResult</MudText> }
+                    else { <MudText Style="opacity:.3;font-size:.85rem;">Adjust the parameters and press Run Prediction.</MudText> }
+                </div>
+                @if (_showAlert) { <MudAlert Severity="@_alertSeverity" Dense="true" Class="mb-3">@_alertMessage</MudAlert> }
+                <MudExpansionPanels Elevation="0">
+                    <MudExpansionPanel Style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;">
+                        <TitleContent><MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2"><MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Small" Style="opacity:.6;" /><MudText Typo="Typo.body2">Parameter Reference</MudText></MudStack></TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Storm Relative Helicity (m²/s²)</strong> — Measures potential for rotating updrafts.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>CAPE (J/kg)</strong> — Buoyant energy available for strong vertical motion.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Lifted Condensation Level (m)</strong> — Lower values favour low-level vortex development.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2"><strong>Bulk Wind Shear (m/s)</strong> — Change in wind speed/direction surface to 6 km.</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block"><strong>Significant Tornado Parameter</strong> — Composite tornado threat index. Values > 1 are significant.</MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code {
+    private bool _isPredicting, _autofilling; private string? _autofillError;
+    private string _alertMessage = ""; private Severity _alertSeverity = Severity.Normal; private bool _showAlert;
+    private bool _useInternet = true; private bool _isApplePlatform = OperatingSystem.IsIOS() || OperatingSystem.IsMacOS();
+    private float _srh = 280f, _cape = 3000f, _lcl = 950f, _shear = 12f, _stp = 1.8f;
+    private bool _useTrust = true; private string _predictionResult = "";
+    protected override void OnInitialized() { if (_isApplePlatform) _useInternet = true; }
+    private async Task AutofillFromRegion()
+    {
+        _autofilling = true; _autofillError = null; StateHasChanged();
+        try { var d = await Autofill.GetTornadoDefaultsAsync(); if (d == null) { _autofillError = "Location unavailable. Please allow location access and try again."; return; } _srh = d.SRH; _cape = d.CAPE; _lcl = d.LCL; _shear = d.Shear; _stp = d.STP; }
+        catch (Exception ex) { _autofillError = $"Autofill failed: {ex.Message}"; }
+        finally { _autofilling = false; StateHasChanged(); }
+    }
+    private async Task RunPrediction()
+    {
+        _isPredicting = true; _showAlert = false; _predictionResult = ""; StateHasChanged();
+        try { _predictionResult = await Task.Run(() => TornadoModelRunner.Predict(new[] { _srh, _cape, _lcl, _shear, _stp }, _useTrust, _useInternet)); _alertMessage = "Prediction successful."; _alertSeverity = Severity.Success; _showAlert = true; }
+        catch (Exception ex) { _predictionResult = ""; _alertMessage = $"Prediction failed: {ex.Message}"; _alertSeverity = Severity.Error; _showAlert = true; }
+        finally { _isPredicting = false; StateHasChanged(); }
+    }
+}

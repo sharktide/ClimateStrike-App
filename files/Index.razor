@@ -1,27 +1,30 @@
-﻿@page "/"
+@page "/"
 @inject STRIKE.Services.IDashboardDataService DashboardDataService
 
 <style>
+    /* ── STRIKE Dashboard – Command Centre Theme ── */
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
 
-    /*
-     * Fix: push the dark background all the way to html + body so it
-     * covers the full scrollable document, not just the viewport height.
-     * The grid overlay uses position:fixed so it tiles correctly while scrolling.
-     */
-    html, body {
-        background-color: #0a0d12 !important;
-        min-height: 100%;
+    .strike-dash {
+        --clr-bg:        #0a0d12;
+        --clr-surface:   #111520;
+        --clr-border:    rgba(255,255,255,0.07);
+        --clr-accent:    #e8a020;
+        --clr-accent2:   #3b7cff;
+        --clr-danger:    #ff4646;
+        --clr-ok:        #27c97e;
+        --clr-text:      #e8eaf0;
+        --clr-muted:     rgba(232,234,240,0.45);
+        font-family: 'Inter', sans-serif;
+        background: var(--clr-bg);
+        min-height: 100vh;
+        color: var(--clr-text);
+        padding: 0;
     }
 
-    /* MudBlazor wraps content in .mud-layout / .mud-main-content — clear those too */
-    .mud-layout,
-    .mud-main-content,
-    .mud-layout-content {
-        background-color: #0a0d12 !important;
-    }
-
-    /* Fixed grid-line overlay that tiles behind all scroll content */
-    .strike-grid-bg {
+    /* grid-line background */
+    .strike-dash::before {
+        content: '';
         position: fixed;
         inset: 0;
         background-image:
@@ -32,32 +35,15 @@
         z-index: 0;
     }
 
-    .strike-dash {
-        --clr-bg:      #0a0d12;
-        --clr-surface: #111520;
-        --clr-border:  rgba(255,255,255,0.07);
-        --clr-accent:  #e8a020;
-        --clr-accent2: #3b7cff;
-        --clr-danger:  #ff4646;
-        --clr-ok:      #27c97e;
-        --clr-text:    #e8eaf0;
-        --clr-muted:   rgba(232,234,240,0.45);
-        font-family: 'Inter', sans-serif;
-        color: var(--clr-text);
-        position: relative;
-        z-index: 1;
-    }
+    .dash-inner { position: relative; z-index: 1; padding: 28px 24px 48px; max-width: 1280px; margin: 0 auto; }
 
-    .dash-inner {
-        padding: 28px 24px 64px;
-        max-width: 1280px;
-        margin: 0 auto;
-    }
-
-    /* ── Hero ── */
+    /* ── Hero header ── */
     .hero-band {
-        display: flex; align-items: center; gap: 18px;
-        margin-bottom: 32px; padding-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 32px;
+        padding-bottom: 20px;
         border-bottom: 1px solid var(--clr-border);
     }
     .hero-icon {
@@ -71,87 +57,92 @@
     .hero-icon .mud-icon-root { font-size: 28px; color: #fff; }
     .hero-title {
         font-family: 'Rajdhani', sans-serif;
-        font-size: 2rem; font-weight: 700;
-        letter-spacing: .04em; line-height: 1; color: var(--clr-text);
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        line-height: 1;
+        color: var(--clr-text);
     }
-    .hero-sub {
-        font-size: .8rem; color: var(--clr-muted);
-        margin-top: 3px; letter-spacing: .06em; text-transform: uppercase;
-    }
+    .hero-sub { font-size: .8rem; color: var(--clr-muted); margin-top: 3px; letter-spacing: .06em; text-transform: uppercase; }
+
     .live-pill {
         margin-left: auto;
         display: flex; align-items: center; gap: 7px;
         background: rgba(39,201,126,.1);
         border: 1px solid rgba(39,201,126,.25);
-        border-radius: 99px; padding: 5px 14px;
-        font-size: .72rem; font-weight: 600;
-        letter-spacing: .08em; text-transform: uppercase;
-        color: var(--clr-ok); white-space: nowrap;
+        border-radius: 99px;
+        padding: 5px 14px;
+        font-size: .72rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--clr-ok);
+        white-space: nowrap;
     }
     .live-dot {
         width: 7px; height: 7px;
-        background: var(--clr-ok); border-radius: 50%;
+        background: var(--clr-ok);
+        border-radius: 50%;
         animation: pulse-dot 1.6s ease-in-out infinite;
     }
-    @@keyframes pulse-dot {
+    @keyframes pulse-dot {
         0%,100% { opacity:1; transform:scale(1); }
         50%      { opacity:.4; transform:scale(.7); }
     }
 
-    /* ── Stat pills ── */
-    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 26px; }
-    .stat-pill {
-        flex: 1; min-width: 120px;
-        background: var(--clr-surface);
-        border: 1px solid var(--clr-border);
-        border-radius: 12px; padding: 16px 18px;
-        display: flex; flex-direction: column; gap: 4px;
-    }
-    .stat-val  { font-family: 'Rajdhani', sans-serif; font-size: 1.6rem; font-weight: 700; line-height: 1; }
-    .stat-desc { font-size: .7rem; color: var(--clr-muted); letter-spacing: .04em; text-transform: uppercase; }
-    .stat-pill.accent  { border-color: rgba(232,160,32,.3); }
-    .stat-pill.accent  .stat-val { color: var(--clr-accent); }
-    .stat-pill.accent2 { border-color: rgba(59,124,255,.3); }
-    .stat-pill.accent2 .stat-val { color: var(--clr-accent2); }
-    .stat-pill.ok      { border-color: rgba(39,201,126,.3); }
-    .stat-pill.ok      .stat-val { color: var(--clr-ok); }
-
-    /* ── Cards ── */
+    /* ── Card base ── */
     .s-card {
         background: var(--clr-surface);
         border: 1px solid var(--clr-border);
-        border-radius: 14px; padding: 22px;
-        height: 100%; box-sizing: border-box;
-        position: relative; overflow: hidden;
+        border-radius: 14px;
+        padding: 22px;
+        height: 100%;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
     }
     .s-card::after {
-        content: ''; position: absolute; inset: 0; border-radius: 14px;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.05); pointer-events: none;
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 14px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+        pointer-events: none;
     }
     .card-label {
         font-family: 'Rajdhani', sans-serif;
-        font-size: .7rem; font-weight: 600;
-        letter-spacing: .12em; text-transform: uppercase;
-        color: var(--clr-muted); margin-bottom: 16px;
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--clr-muted);
+        margin-bottom: 16px;
         display: flex; align-items: center; gap: 8px;
     }
-    .card-label-line { flex: 1; height: 1px; background: var(--clr-border); }
+    .card-label-line {
+        flex: 1;
+        height: 1px;
+        background: var(--clr-border);
+    }
 
-    /* ── Disaster grid ── */
+    /* ── Quick-access disaster buttons ── */
     .disaster-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px; margin-top: 4px;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+        margin-top: 4px;
     }
     .d-btn {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         gap: 8px;
         background: rgba(255,255,255,.03);
         border: 1px solid var(--clr-border);
-        border-radius: 10px; padding: 14px 8px;
+        border-radius: 10px;
+        padding: 14px 8px;
         cursor: pointer;
         transition: background .18s, border-color .18s, transform .15s;
-        text-decoration: none; color: var(--clr-text);
+        text-decoration: none;
+        color: var(--clr-text);
     }
     .d-btn:hover {
         background: rgba(232,160,32,.08);
@@ -161,72 +152,108 @@
     .d-btn .mud-icon-root { font-size: 26px; }
     .d-btn span { font-size: .72rem; font-weight: 500; text-align: center; line-height: 1.2; }
 
-    /* ── Accuracy bars ── */
+    /* ── Model accuracy bars ── */
     .acc-row { margin-bottom: 14px; }
     .acc-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
     .acc-name { font-size: .8rem; font-weight: 500; }
     .acc-pct  { font-size: .8rem; font-weight: 700; color: var(--clr-accent); font-family: 'Rajdhani', sans-serif; }
-    .acc-track { height: 5px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden; }
-    .acc-fill  { height: 100%; border-radius: 99px;
+    .acc-track {
+        height: 5px; background: rgba(255,255,255,.07);
+        border-radius: 99px; overflow: hidden;
+    }
+    .acc-fill {
+        height: 100%;
+        border-radius: 99px;
         background: linear-gradient(90deg, var(--clr-accent2) 0%, var(--clr-accent) 100%);
-        transition: width .6s cubic-bezier(.4,0,.2,1); }
+        transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
 
     /* ── Recent predictions ── */
     .pred-row {
         display: flex; align-items: center; gap: 12px;
-        padding: 11px 0; border-bottom: 1px solid var(--clr-border);
+        padding: 11px 0;
+        border-bottom: 1px solid var(--clr-border);
     }
     .pred-row:last-child { border-bottom: none; }
     .pred-icon-wrap {
         width: 36px; height: 36px; border-radius: 9px;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
-        background: rgba(59,124,255,.12); border: 1px solid rgba(59,124,255,.2);
+        background: rgba(59,124,255,.12);
+        border: 1px solid rgba(59,124,255,.2);
     }
     .pred-icon-wrap .mud-icon-root { font-size: 18px; color: var(--clr-accent2); }
     .pred-type  { font-size: .82rem; font-weight: 600; }
     .pred-label { font-size: .72rem; color: var(--clr-muted); margin-top: 1px; }
-    .pred-time  {
-        margin-left: auto; font-size: .7rem; color: var(--clr-muted);
-        white-space: nowrap; font-family: 'Rajdhani', sans-serif; letter-spacing: .03em;
-    }
+    .pred-time  { margin-left: auto; font-size: .7rem; color: var(--clr-muted); white-space: nowrap; font-family: 'Rajdhani', sans-serif; letter-spacing: .03em; }
+
     .risk-chip {
-        display: inline-block; border-radius: 5px; padding: 2px 9px;
-        font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+        display: inline-block;
+        border-radius: 5px;
+        padding: 2px 9px;
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
     }
     .risk-low    { background: rgba(39,201,126,.15); color: var(--clr-ok); border: 1px solid rgba(39,201,126,.3); }
     .risk-medium { background: rgba(232,160,32,.15); color: var(--clr-accent); border: 1px solid rgba(232,160,32,.3); }
     .risk-high   { background: rgba(255,70,70,.15); color: var(--clr-danger); border: 1px solid rgba(255,70,70,.3); }
 
     .view-history-btn {
-        display: block; text-align: center; margin-top: 14px; padding: 9px;
-        border: 1px dashed rgba(255,255,255,.12); border-radius: 8px;
-        font-size: .75rem; color: var(--clr-muted);
-        text-decoration: none; transition: background .15s, color .15s; letter-spacing: .04em;
+        display: block; text-align: center;
+        margin-top: 14px;
+        padding: 9px;
+        border: 1px dashed rgba(255,255,255,.12);
+        border-radius: 8px;
+        font-size: .75rem;
+        color: var(--clr-muted);
+        text-decoration: none;
+        transition: background .15s, color .15s;
+        letter-spacing: .04em;
     }
     .view-history-btn:hover { background: rgba(255,255,255,.04); color: var(--clr-text); }
 
-    /* ── Empty state ── */
-    .empty-state { text-align: center; padding: 32px 16px; color: var(--clr-muted); font-size: .82rem; }
+    /* ── Stat pills at top ── */
+    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 26px; }
+    .stat-pill {
+        flex: 1; min-width: 120px;
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-val { font-family: 'Rajdhani', sans-serif; font-size: 1.6rem; font-weight: 700; line-height: 1; }
+    .stat-desc { font-size: .7rem; color: var(--clr-muted); letter-spacing: .04em; text-transform: uppercase; }
+    .stat-pill.accent  { border-color: rgba(232,160,32,.3); }
+    .stat-pill.accent  .stat-val { color: var(--clr-accent); }
+    .stat-pill.accent2 { border-color: rgba(59,124,255,.3); }
+    .stat-pill.accent2 .stat-val { color: var(--clr-accent2); }
+    .stat-pill.ok      { border-color: rgba(39,201,126,.3); }
+    .stat-pill.ok      .stat-val { color: var(--clr-ok); }
+
+    /* ── No-results empty state ── */
+    .empty-state {
+        text-align: center; padding: 32px 16px;
+        color: var(--clr-muted); font-size: .82rem;
+    }
     .empty-state .mud-icon-root { font-size: 38px; opacity: .25; display: block; margin: 0 auto 10px; }
 
-    /* ── Skeleton shimmer ── */
+    /* skeleton shimmer */
     .shimmer {
         background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
         background-size: 200% 100%;
         animation: shimmer 1.4s infinite;
         border-radius: 6px; height: 14px; margin-bottom: 10px;
     }
-    @@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 </style>
-
-<!-- Fixed grid overlay — tiles behind scroll content because it's position:fixed -->
-<div class="strike-grid-bg"></div>
 
 <div class="strike-dash">
     <div class="dash-inner">
 
-        <!-- Hero -->
+        @* ── Hero band ── *@
         <div class="hero-band">
             <div class="hero-icon">
                 <MudIcon Icon="@Icons.Material.Filled.Bolt" />
@@ -241,7 +268,7 @@
             </div>
         </div>
 
-        <!-- Stat pills -->
+        @* ── Stat pills ── *@
         <div class="stat-row">
             <div class="stat-pill accent">
                 <div class="stat-val">8</div>
@@ -259,10 +286,10 @@
 
         <MudGrid Spacing="3">
 
-            <!-- LEFT -->
+            @* ── LEFT column ── *@
             <MudItem xs="12" md="7">
 
-                <!-- Quick access -->
+                @* Quick access *@
                 <div class="s-card mb-3">
                     <div class="card-label">
                         <MudIcon Icon="@Icons.Material.Filled.GridView" Style="font-size:14px;" />
@@ -305,13 +332,14 @@
                     </div>
                 </div>
 
-                <!-- Model accuracy -->
+                @* Model accuracy *@
                 <div class="s-card">
                     <div class="card-label">
                         <MudIcon Icon="@Icons.Material.Filled.BarChart" Style="font-size:14px;" />
                         Model Accuracy
                         <div class="card-label-line"></div>
                     </div>
+
                     @if (ModelConfidences == null)
                     {
                         <div class="shimmer" style="width:70%;"></div>
@@ -338,7 +366,7 @@
                 </div>
             </MudItem>
 
-            <!-- RIGHT -->
+            @* ── RIGHT column ── *@
             <MudItem xs="12" md="5">
                 <div class="s-card" style="height:100%;">
                     <div class="card-label">
@@ -346,6 +374,7 @@
                         Recent Predictions
                         <div class="card-label-line"></div>
                     </div>
+
                     @if (RecentPredictionsTruncated == null)
                     {
                         <div class="shimmer"></div>
@@ -378,7 +407,10 @@
                                 <div class="pred-time">@pred.Timestamp.ToString("dd MMM HH:mm")</div>
                             </div>
                         }
-                        <a class="view-history-btn" href="/history">View Full History →</a>
+
+                        <a class="view-history-btn" href="/history">
+                            View Full History →
+                        </a>
                     }
                 </div>
             </MudItem>
@@ -400,6 +432,7 @@
         RecentPredictions = await DashboardDataService.GetRecentPredictionsAsync();
         RecentPredictionsTruncated = RecentPredictions?.Take(5).ToList();
         _totalPredictions = RecentPredictions?.Count;
+
         if (ModelConfidences is { Count: > 0 })
             _avgAccuracy = ModelConfidences.Values.Average() * 100;
     }

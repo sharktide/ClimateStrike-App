@@ -72,6 +72,7 @@
         #blazor-error-ui {
             display: none;
         }
+
     </style>
 </head>
 
@@ -85,14 +86,23 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-
+    <script>
+        window.strikeGetLocation = () => new Promise((resolve, reject) => {
+            if (!navigator.geolocation) { reject("no-geo"); return; }
+            navigator.geolocation.getCurrentPosition(
+                p => resolve([p.coords.latitude, p.coords.longitude]),
+                e => reject(e.message),
+                { timeout: 8000, maximumAge: 60000 }
+            );
+        });
+    </script>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script>
-        // Remove loading styles once Blazor is ready
         window.addEventListener('DOMContentLoaded', () => {
             document.body.classList.remove('loading-screen');
             document.getElementById('app').classList.remove('loading');
         });
     </script>
+
 </body>
 </html>

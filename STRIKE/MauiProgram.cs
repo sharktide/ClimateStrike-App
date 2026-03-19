@@ -34,6 +34,9 @@ namespace STRIKE
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddMudServices();
             builder.Services.AddSingleton<IDashboardDataService, MockDashboardDataService>();
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddScoped<RegionAutofillService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

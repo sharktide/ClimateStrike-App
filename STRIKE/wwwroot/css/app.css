@@ -112,3 +112,54 @@ h1:focus {
 .appbar-compact {
     padding-top: env(safe-area-inset-top);
 }
+
+.predictor-card {
+    background: #111520;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 24px;
+    color: #e8eaf0;
+}
+
+.param-block {
+    margin-bottom: 20px;
+}
+
+.param-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #e8eaf0;
+    margin-bottom: 2px;
+}
+
+.param-hint {
+    font-size: 0.7rem;
+    color: rgba(232, 234, 240, 0.45);
+    margin-bottom: 6px;
+}
+
+.result-card {
+    border-radius: 10px;
+    padding: 18px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+}
+
+.result-text {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.section-sep {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin: 20px 0;
+}
