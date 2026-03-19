@@ -3,88 +3,249 @@
 @using STRIKE.Services
 @using STRIKE.InferenceUtils
 
-<MudContainer MaxWidth="MaxWidth.Large">
-    <MudText Typo="Typo.h4" Class="mt-4 mb-2">📜 Prediction History</MudText>
-    <MudGrid>
-        <MudItem xs="12" md="6">
-            <MudPaper Elevation="3" Class="pa-4 mb-4">
-                <MudText Typo="Typo.h6">All Predictions</MudText>
-                <MudList T="string">
-                    @if (AllPredictions == null)
-                    {
-                        <MudListItem T="string" Value="@("Loading")">Loading...</MudListItem>
-                    }
-                    else if (!AllPredictions.Any())
-                    {
-                        <MudListItem T="string" Value="@("Empty")">
-                            <i>No predictions yet. Run a model to see results here!</i>
-                        </MudListItem>
-                    }
-                    else
-                    {
-                        @foreach (var pred in AllPredictions)
-                        {
-                            <MudListItem T="string" @onclick="() => SelectPrediction(pred)"Style="cursor:pointer;">
-                                <b>@pred.DisasterType</b> - <b>@pred.Label</b> - @pred.Timestamp.ToString("dd MMM yyyy HH:mm")
-                            </MudListItem>
-                        }
-                    }
-                </MudList>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudPaper Elevation="3" Class="pa-4 mb-4">
-                <MudText Typo="Typo.h6">Prediction Details</MudText>
-                @if (SelectedPrediction == null)
+<style>
+    html, body, .mud-layout, .mud-main-content, .mud-layout-content { background-color: #0a0d12 !important; }
+    .strike-grid-bg { position:fixed;inset:0;background-image:linear-gradient(rgba(59,124,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,124,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0; }
+    .page-shell { position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:28px 20px 64px;font-family:'Inter',sans-serif;color:#e8eaf0; }
+
+    .page-back { display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,234,240,.4);text-decoration:none;margin-bottom:20px;transition:color .15s; }
+    .page-back:hover { color:#3b7cff; }
+
+    .page-header { display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07); }
+    .page-icon { width:46px;height:46px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b7cff,#1a4fa0);box-shadow:0 0 20px rgba(59,124,255,.3); }
+    .page-icon .mud-icon-root { font-size:24px;color:#fff; }
+    .page-title { font-size:1.5rem;font-weight:700;line-height:1; }
+    .page-sub { font-size:.75rem;color:rgba(232,234,240,.45);margin-top:3px; }
+
+    /* ── Cards ── */
+    .h-card { background:#111520;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px;color:#e8eaf0;height:100%;box-sizing:border-box; }
+    .card-label { font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,234,240,.4);margin-bottom:16px;display:flex;align-items:center;gap:8px; }
+    .card-label-line { flex:1;height:1px;background:rgba(255,255,255,.07); }
+
+    /* ── Prediction list ── */
+    .pred-list { display:flex;flex-direction:column;gap:4px; }
+    .pred-item {
+        display:flex;align-items:center;gap:12px;
+        padding:11px 14px;border-radius:9px;
+        border:1px solid transparent;
+        cursor:pointer;
+        transition:background .15s,border-color .15s;
+    }
+    .pred-item:hover { background:rgba(59,124,255,.07);border-color:rgba(59,124,255,.15); }
+    .pred-item.selected { background:rgba(59,124,255,.12);border-color:rgba(59,124,255,.3); }
+    .pred-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+    .pred-info { flex:1;min-width:0; }
+    .pred-type { font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .pred-meta { font-size:.7rem;color:rgba(232,234,240,.45);margin-top:1px; }
+    .pred-time { font-size:.7rem;color:rgba(232,234,240,.35);white-space:nowrap;font-variant-numeric:tabular-nums; }
+
+    .risk-chip { display:inline-block;border-radius:5px;padding:2px 8px;font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase; }
+    .risk-low    { background:rgba(39,201,126,.15);color:#27c97e;border:1px solid rgba(39,201,126,.3); }
+    .risk-medium { background:rgba(232,160,32,.15);color:#e8a020;border:1px solid rgba(232,160,32,.3); }
+    .risk-high   { background:rgba(255,70,70,.15);color:#ff4646;border:1px solid rgba(255,70,70,.3); }
+
+    /* ── Detail panel ── */
+    .detail-empty { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 16px;color:rgba(232,234,240,.25);text-align:center; }
+    .detail-empty .mud-icon-root { font-size:42px;margin-bottom:10px;opacity:.2; }
+    .detail-empty p { font-size:.82rem;margin:0; }
+
+    .detail-stat-row { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px; }
+    .detail-stat { flex:1;min-width:100px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 14px; }
+    .detail-stat-val { font-size:1.1rem;font-weight:700;line-height:1;margin-bottom:3px; }
+    .detail-stat-lbl { font-size:.68rem;color:rgba(232,234,240,.4);letter-spacing:.04em;text-transform:uppercase; }
+
+    /* ── Inputs table ── */
+    .inputs-table { width:100%;border-collapse:collapse;font-size:.8rem; }
+    .inputs-table th { text-align:left;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(232,234,240,.4);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.07); }
+    .inputs-table td { padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle; }
+    .inputs-table tr:last-child td { border-bottom:none; }
+    .inputs-table tr:hover td { background:rgba(255,255,255,.02); }
+    .feat-name { font-weight:500; }
+    .feat-val  { font-variant-numeric:tabular-nums;color:#e8a020; }
+    .feat-unit { color:rgba(232,234,240,.4);font-size:.72rem; }
+
+    /* ── Danger buttons ── */
+    .danger-row { display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07); }
+
+    /* ── Empty / loading states ── */
+    .shimmer { background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;height:42px;margin-bottom:6px; }
+    @@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .count-badge { display:inline-flex;align-items:center;justify-content:center;background:rgba(59,124,255,.15);border:1px solid rgba(59,124,255,.25);border-radius:99px;padding:2px 10px;font-size:.7rem;font-weight:600;color:#3b7cff;margin-left:8px; }
+</style>
+
+<div class="strike-grid-bg"></div>
+<div class="page-shell">
+
+    <a class="page-back" href="/">
+        <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Style="font-size:15px;" /> Dashboard
+    </a>
+
+    <div class="page-header">
+        <div class="page-icon"><MudIcon Icon="@Icons.Material.Filled.History" /></div>
+        <div>
+            <div class="page-title">
+                Prediction History
+                @if (AllPredictions != null)
                 {
-                    <MudText Typo="Typo.body2">Select a prediction to view details.</MudText>
+                    <span class="count-badge">@AllPredictions.Count</span>
+                }
+            </div>
+            <div class="page-sub">All past model runs — select an entry to inspect its inputs and result</div>
+        </div>
+    </div>
+
+    <MudGrid Spacing="3">
+
+        <!-- ── LEFT: list ── -->
+        <MudItem xs="12" md="5">
+            <div class="h-card">
+                <div class="card-label">
+                    <MudIcon Icon="@Icons.Material.Filled.List" Style="font-size:13px;" />
+                    All Predictions
+                    <div class="card-label-line"></div>
+                </div>
+
+                @if (AllPredictions == null)
+                {
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="opacity:.7;"></div>
+                    <div class="shimmer" style="opacity:.5;"></div>
+                }
+                else if (!AllPredictions.Any())
+                {
+                    <div class="detail-empty">
+                        <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
+                        <p>No predictions yet.<br />Run a model to see results here.</p>
+                    </div>
                 }
                 else
                 {
-                    <MudStack Row="true" Spacing="2" Class="mb-2">
-                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteSelectedPrediction">Delete</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAllPredictions">Delete All</MudButton>
-                    </MudStack>
-                    <MudTable Items="GetPredictionRows()" T="RowData">
-                        <HeaderContent>
-                            <MudTh>Field</MudTh>
-                            <MudTh>Value</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>@context.Name</MudTd>
-                            <MudTd>@context.Value</MudTd>
-                        </RowTemplate>
-                    </MudTable>
-
-                    <MudTable Items="GetDisplayInputs()" T="InputDisplayRow">
-                        <HeaderContent>
-                            <MudTh>Feature</MudTh>
-                            <MudTh>Value</MudTh>
-                            <MudTh>Unit</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>@context.Name</MudTd>
-                            <MudTd>@context.Value</MudTd>
-                            <MudTd>@context.Unit</MudTd>
-                        </RowTemplate>
-                    </MudTable>
+                    <div class="pred-list">
+                        @foreach (var pred in AllPredictions)
+                        {
+                            var isSelected = SelectedPrediction == pred;
+                            var riskClass  = GetRiskClass(pred.Label);
+                            var dotColor   = GetDotColor(pred.Label);
+                            <div class="pred-item @(isSelected ? "selected" : "")"
+                                 @onclick="() => SelectPrediction(pred)">
+                                <div class="pred-dot" style="background:@dotColor;box-shadow:0 0 6px @dotColor;"></div>
+                                <div class="pred-info">
+                                    <div class="pred-type">@pred.DisasterType</div>
+                                    <div class="pred-meta">
+                                        <span class="risk-chip @riskClass">@pred.Label</span>
+                                    </div>
+                                </div>
+                                <div class="pred-time">@pred.Timestamp.ToString("dd MMM HH:mm")</div>
+                            </div>
+                        }
+                    </div>
                 }
-            </MudPaper>
+            </div>
         </MudItem>
+
+        <!-- ── RIGHT: detail ── -->
+        <MudItem xs="12" md="7">
+            <div class="h-card">
+                <div class="card-label">
+                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Style="font-size:13px;" />
+                    Prediction Details
+                    <div class="card-label-line"></div>
+                </div>
+
+                @if (SelectedPrediction == null)
+                {
+                    <div class="detail-empty">
+                        <MudIcon Icon="@Icons.Material.Filled.TouchApp" />
+                        <p>Select a prediction from the list<br />to inspect its details.</p>
+                    </div>
+                }
+                else
+                {
+                    <!-- Stat pills -->
+                    <div class="detail-stat-row">
+                        <div class="detail-stat">
+                            <div class="detail-stat-val">@SelectedPrediction.DisasterType</div>
+                            <div class="detail-stat-lbl">Disaster Type</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="detail-stat-val" style="color:@GetDotColor(SelectedPrediction.Label);">@SelectedPrediction.Label</div>
+                            <div class="detail-stat-lbl">Risk Label</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="detail-stat-val" style="color:#e8a020;">@($"{SelectedPrediction.Probability * 100:F1}%")</div>
+                            <div class="detail-stat-lbl">Probability</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="detail-stat-val" style="font-size:.85rem;">@SelectedPrediction.Timestamp.ToString("dd MMM yyyy HH:mm")</div>
+                            <div class="detail-stat-lbl">Run At</div>
+                        </div>
+                    </div>
+
+                    <!-- TrustNet badge -->
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                        <MudIcon Icon="@(SelectedPrediction.Trust ? Icons.Material.Filled.VerifiedUser : Icons.Material.Filled.Security)"
+                                 Size="Size.Small"
+                                 Style="@(SelectedPrediction.Trust ? "color:#27c97e;" : "color:rgba(232,234,240,.3);")" />
+                        <MudText Typo="Typo.caption" Style="@(SelectedPrediction.Trust ? "color:#27c97e;" : "color:rgba(232,234,240,.3);")">
+                            @(SelectedPrediction.Trust ? "TrustNet ensemble used" : "Standard model — TrustNet not used")
+                        </MudText>
+                    </MudStack>
+
+                    <!-- Input features table -->
+                    @if (GetDisplayInputs().Any())
+                    {
+                        <div class="card-label" style="margin-bottom:10px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Tune" Style="font-size:13px;" />
+                            Input Parameters
+                            <div class="card-label-line"></div>
+                        </div>
+                        <table class="inputs-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Value</th>
+                                    <th>Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in GetDisplayInputs())
+                                {
+                                    <tr>
+                                        <td class="feat-name">@row.Name</td>
+                                        <td class="feat-val">@row.Value</td>
+                                        <td class="feat-unit">@row.Unit</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+
+                    <!-- Danger actions -->
+                    <div class="danger-row">
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.DeleteOutline"
+                                   OnClick="DeleteSelectedPrediction">
+                            Delete This
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.DeleteForever"
+                                   OnClick="DeleteAllPredictions">
+                            Delete All
+                        </MudButton>
+                    </div>
+                }
+            </div>
+        </MudItem>
+
     </MudGrid>
-</MudContainer>
+</div>
 
 @code {
-
-    
     private List<PredictionResult>? AllPredictions;
     private PredictionResult? SelectedPrediction;
 
-
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshPredictions();
-    }
+    protected override async Task OnInitializedAsync() => await RefreshPredictions();
 
     private async Task RefreshPredictions()
     {
@@ -94,12 +255,10 @@
 
     private async Task DeleteSelectedPrediction()
     {
-        if (SelectedPrediction != null)
-        {
-            await DashboardDataService.DeletePredictionAsync(SelectedPrediction.Timestamp);
-            SelectedPrediction = null;
-            await RefreshPredictions();
-        }
+        if (SelectedPrediction == null) return;
+        await DashboardDataService.DeletePredictionAsync(SelectedPrediction.Timestamp);
+        SelectedPrediction = null;
+        await RefreshPredictions();
     }
 
     private async Task DeleteAllPredictions()
@@ -109,34 +268,32 @@
         await RefreshPredictions();
     }
 
-    private void SelectPrediction(STRIKE.Services.PredictionResult pred)
-    {
-        SelectedPrediction = pred;
-    }
+    private void SelectPrediction(PredictionResult pred) => SelectedPrediction = pred;
+
     private List<InputDisplayRow> GetDisplayInputs()
     {
-        if (SelectedPrediction?.Inputs == null)
-            return new();
-
+        if (SelectedPrediction?.Inputs == null) return new();
         return SelectedPrediction.Inputs.Select(kvp => new InputDisplayRow
         {
-            Name = kvp.Key,
+            Name  = kvp.Key,
             Value = kvp.Value,
-            Unit = InferenceRunner.FeatureUnits.TryGetValue(kvp.Key, out var unit) ? unit : "—"
+            Unit  = InferenceRunner.FeatureUnits.TryGetValue(kvp.Key, out var u) ? u : "—"
         }).ToList();
     }
-    private List<RowData> GetPredictionRows()
-    {
-        if (SelectedPrediction == null)
-            return new List<RowData>();
 
-        return new List<RowData>
-        {
-            new() { Name = "Disaster Type", Value = SelectedPrediction.DisasterType },
-            new() { Name = "Label", Value = SelectedPrediction.Label },
-            new() { Name = "Probability", Value = $"{SelectedPrediction.Probability * 100:F2}%" },
-            new() { Name = "Trust Used", Value = SelectedPrediction.Trust.ToString() },
-            new() { Name = "Timestamp", Value = SelectedPrediction.Timestamp.ToString("dd MMM yyyy HH:mm:ss") }
-        };
+    private string GetRiskClass(string label)
+    {
+        var l = label?.ToLowerInvariant() ?? "";
+        if (l.Contains("high") || l.Contains("severe") || l.Contains("extreme")) return "risk-high";
+        if (l.Contains("medium") || l.Contains("moderate") || l.Contains("elevated")) return "risk-medium";
+        return "risk-low";
+    }
+
+    private string GetDotColor(string label)
+    {
+        var l = label?.ToLowerInvariant() ?? "";
+        if (l.Contains("high") || l.Contains("severe") || l.Contains("extreme")) return "#ff4646";
+        if (l.Contains("medium") || l.Contains("moderate") || l.Contains("elevated")) return "#e8a020";
+        return "#27c97e";
     }
 }

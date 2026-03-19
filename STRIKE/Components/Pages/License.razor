@@ -1,24 +1,137 @@
 @page "/license"
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-            <MudPaper Elevation="3" Class="pa-4">
-                <MudGrid>
-                    <MudItem xs="12" sm="6">
-                        <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">
-Copyright 2025 Rihaan Meher
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+<style>
+    html, body, .mud-layout, .mud-main-content, .mud-layout-content { background-color: #0a0d12 !important; }
+    .strike-grid-bg { position:fixed;inset:0;background-image:linear-gradient(rgba(59,124,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,124,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0; }
+    .page-shell { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:28px 20px 64px;font-family:'Inter',sans-serif;color:#e8eaf0; }
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    .page-back { display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,234,240,.4);text-decoration:none;margin-bottom:20px;transition:color .15s; }
+    .page-back:hover { color:#e8a020; }
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-                        </MudText>
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-</MudContainer>
+    .page-header { display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07); }
+    .page-icon { width:46px;height:46px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8a020,#c86000);box-shadow:0 0 20px rgba(232,160,32,.3); }
+    .page-icon .mud-icon-root { font-size:24px;color:#fff; }
+    .page-title { font-size:1.5rem;font-weight:700;line-height:1; }
+    .page-sub { font-size:.75rem;color:rgba(232,234,240,.45);margin-top:3px; }
+
+    .license-card { background:#111520;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:32px;color:#e8eaf0; }
+
+    /* copyright banner */
+    .copyright-band {
+        display:flex;align-items:center;gap:16px;
+        background:rgba(232,160,32,.07);
+        border:1px solid rgba(232,160,32,.2);
+        border-radius:10px;
+        padding:18px 20px;
+        margin-bottom:28px;
+    }
+    .copyright-icon { width:40px;height:40px;border-radius:9px;background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .copyright-icon .mud-icon-root { font-size:20px;color:#e8a020; }
+    .copyright-name { font-size:1rem;font-weight:700; }
+    .copyright-year { font-size:.75rem;color:rgba(232,234,240,.45);margin-top:2px; }
+
+    /* apache badge */
+    .apache-badge {
+        display:inline-flex;align-items:center;gap:8px;
+        background:rgba(59,124,255,.1);border:1px solid rgba(59,124,255,.25);
+        border-radius:8px;padding:8px 14px;
+        font-size:.78rem;font-weight:600;color:#3b7cff;
+        margin-bottom:24px;
+    }
+
+    /* license body */
+    .license-section { margin-bottom:24px; }
+    .license-section-title {
+        font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+        color:rgba(232,234,240,.4);margin-bottom:10px;
+        display:flex;align-items:center;gap:8px;
+    }
+    .license-section-title::after { content:'';flex:1;height:1px;background:rgba(255,255,255,.07); }
+    .license-body { font-size:.82rem;line-height:1.75;color:rgba(232,234,240,.7); }
+    .license-body strong { color:#e8eaf0;font-weight:600; }
+
+    .license-link {
+        display:inline-flex;align-items:center;gap:5px;
+        color:#3b7cff;text-decoration:none;font-size:.82rem;font-weight:500;
+        border-bottom:1px solid rgba(59,124,255,.3);padding-bottom:1px;
+        transition:color .15s,border-color .15s;
+    }
+    .license-link:hover { color:#6fa3ff;border-color:rgba(111,163,255,.5); }
+
+    .disclaimer-box {
+        background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);
+        border-radius:10px;padding:18px 20px;
+        font-size:.8rem;line-height:1.7;color:rgba(232,234,240,.55);
+        font-style:italic;
+    }
+</style>
+
+<div class="strike-grid-bg"></div>
+<div class="page-shell">
+
+    <a class="page-back" href="/">
+        <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Style="font-size:15px;" /> Dashboard
+    </a>
+
+    <div class="page-header">
+        <div class="page-icon"><MudIcon Icon="@Icons.Material.Filled.Gavel" /></div>
+        <div>
+            <div class="page-title">License</div>
+            <div class="page-sub">Software license and attribution information for STRIKE</div>
+        </div>
+    </div>
+
+    <div class="license-card">
+
+        <!-- Copyright owner -->
+        <div class="copyright-band">
+            <div class="copyright-icon"><MudIcon Icon="@Icons.Material.Filled.Copyright" /></div>
+            <div>
+                <div class="copyright-name">Rihaan Meher</div>
+                <div class="copyright-year">Copyright © 2025. All rights reserved.</div>
+            </div>
+        </div>
+
+        <!-- Apache badge -->
+        <div class="apache-badge">
+            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Style="font-size:16px;" />
+            Apache License, Version 2.0
+        </div>
+
+        <!-- Grant -->
+        <div class="license-section">
+            <div class="license-section-title">Grant of License</div>
+            <p class="license-body">
+                Licensed under the <strong>Apache License, Version 2.0</strong> (the "License");
+                you may not use this file except in compliance with the License.
+                You may obtain a copy of the License at:
+            </p>
+            <p style="margin-top:10px;">
+                <a class="license-link" href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">
+                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Style="font-size:14px;" />
+                    http://www.apache.org/licenses/LICENSE-2.0
+                </a>
+            </p>
+        </div>
+
+        <!-- Conditions -->
+        <div class="license-section">
+            <div class="license-section-title">Conditions</div>
+            <p class="license-body">
+                Unless required by applicable law or agreed to in writing, software distributed
+                under the License is distributed on an <strong>"AS IS" BASIS, WITHOUT WARRANTIES
+                OR CONDITIONS OF ANY KIND</strong>, either express or implied. See the License for
+                the specific language governing permissions and limitations under the License.
+            </p>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-box">
+            This software is provided for informational and research purposes only.
+            Predictions generated by STRIKE are probabilistic estimates and should not be used
+            as the sole basis for emergency decisions. Always consult official meteorological
+            and geological authorities in the event of a potential natural disaster.
+        </div>
+
+    </div>
+</div>
