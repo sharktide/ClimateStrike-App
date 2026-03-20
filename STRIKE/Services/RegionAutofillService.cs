@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using System.Net.Http.Json;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace STRIKE.Services
 {
@@ -18,16 +19,29 @@ namespace STRIKE.Services
             _http = http;
         }
 
-        // ── Geolocation ────────────────────────────────────────────────
         public async Task<(double Lat, double Lon)?> GetLocationAsync()
         {
             try
             {
-                var coords = await _js.InvokeAsync<double[]>("strikeGetLocation");
-                if (coords is { Length: 2 })
-                    return (coords[0], coords[1]);
+                var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+                var location = await Geolocation.GetLocationAsync(request);
+
+                if (location != null)
+                    return (location.Latitude, location.Longitude);
             }
-            catch { /* permission denied or unavailable */ }
+            catch (FeatureNotSupportedException)
+            {
+                // device does not support location
+            }
+            catch (PermissionException)
+            {
+                // user denied permission
+            }
+            catch
+            {
+                // other errors
+            }
+
             return null;
         }
 
@@ -36,10 +50,12 @@ namespace STRIKE.Services
         {
             try
             {
-                var url = $"https://api.open-meteo.com/v1/forecast" +
-                          $"?latitude={lat}&longitude={lon}" +
-                          $"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation" +
-                          $"&wind_speed_unit=ms";
+                var url = string.Format(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    "https://api.open-meteo.com/v1/forecast?latitude={0}&longitude={1}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation&wind_speed_unit=ms",
+                    lat, lon
+                );
+
                 var resp = await _http.GetFromJsonAsync<OpenMeteoResponse>(url);
                 if (resp?.Current == null) return null;
 
@@ -59,7 +75,11 @@ namespace STRIKE.Services
         {
             try
             {
-                var url = $"https://api.opentopodata.org/v1/srtm30m?locations={lat},{lon}";
+                var url = string.Format(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    "https://api.opentopodata.org/v1/srtm30m?locations={0},{1}",
+                    lat, lon
+                );
                 var resp = await _http.GetFromJsonAsync<TopoResponse>(url);
                 return (float?)resp?.Results?.FirstOrDefault()?.Elevation;
             }

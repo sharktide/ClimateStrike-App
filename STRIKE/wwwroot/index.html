@@ -88,16 +88,6 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <script>
-        window.strikeGetLocation = () => new Promise((resolve, reject) => {
-            if (!navigator.geolocation) { reject("no-geo"); return; }
-            navigator.geolocation.getCurrentPosition(
-                p => resolve([p.coords.latitude, p.coords.longitude]),
-                e => reject(e.message),
-                { timeout: 8000, maximumAge: 60000 }
-            );
-        });
-    </script>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
