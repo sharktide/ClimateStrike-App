@@ -1,0 +1,5 @@
+{
+    "razor.disabledDiagnosticIds": [
+        "RZ10012"
+    ]
+}

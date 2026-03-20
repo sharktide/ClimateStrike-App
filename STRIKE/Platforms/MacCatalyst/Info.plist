@@ -23,6 +23,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ClimateStrike AI needs your location to autofill weather conditions based on your region.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ClimateStrike AI uses your location to autofill weather conditions based on your region.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>ClimateStrike AI uses your location to autofill weather conditions based on your region.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright (c) 2025, Rihaan Meher</string>
 	<key>XSAppIconAssets</key>
