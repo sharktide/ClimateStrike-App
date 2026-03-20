@@ -294,10 +294,6 @@
                             <MudIcon Icon="@Icons.Material.Filled.WaterDrop" Style="color:#5dade2;" />
                             <span>Pluvial Flood</span>
                         </a>
-                        <a class="d-btn" href="/predictor">
-                            <MudIcon Icon="@Icons.Material.Filled.Apps" Style="color:rgba(232,234,240,.4);" />
-                            <span>All Predictors</span>
-                        </a>
                     </div>
                 </div>
 
@@ -409,7 +405,7 @@
     }
 
     private string GetDisasterIcon(string disasterType) =>
-        disasterType?.ToLowerInvariant() switch
+        disasterType.ToLowerInvariant() switch
         {
             var s when s.Contains("earthquake") => Icons.Material.Filled.Landscape,
             var s when s.Contains("hurricane")  => Icons.Material.Filled.Cyclone,
